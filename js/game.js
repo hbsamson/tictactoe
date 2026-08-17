@@ -1,6 +1,11 @@
 let gameKey = null;
 let playerTile = null;
 let boardPollingInterval = null;
+let waitingInterval = null;
+let waitingTimeout = null;
+
+const WAITING_TIMEOUT = 30000; // 30 seconds
+const WAITING_TIMEOUT_SECONDS = 30;
 
 let gameStarted = false;
 let gameFinished = false;
@@ -12,6 +17,7 @@ let oScore = 0;
 const lobby = document.getElementById("lobby");
 const waiting = document.getElementById("waiting");
 const game = document.getElementById("game");
+const waitingMessage = document.getElementById("waitingForPlayer");
 
 const createButton = document.getElementById("createButton");
 const joinButton = document.getElementById("joinButton");
@@ -40,7 +46,8 @@ createButton.addEventListener("click", async () => {
 
         lobby.hidden = true;
         game.hidden = false;
-        waiting.hidden = false;
+        // waiting.hidden = false;
+        waitingForPlayer.hidden = false;
 
         displayKey.textContent = key;
 
@@ -53,14 +60,22 @@ createButton.addEventListener("click", async () => {
 });
 
 function waitForOpponentToJoin() {
-    const interval = setInterval(async () => {
+    clearWaitingTimers();
+
+    let secondsLeft = WAITING_TIMEOUT_SECONDS;
+
+    waitingMessage.textContent =
+        `Waiting for another player... (${secondsLeft}s)`;
+
+    // API polling
+    waitingInterval = setInterval(async () => {
         try {
             const status = await checkGame(gameKey);
 
-            console.log(status);
+            console.log("Game status:", status);
 
             if (status) {
-                clearInterval(interval);
+                clearWaitingTimers();
 
                 gameStarted = true;
 
@@ -69,12 +84,70 @@ function waitForOpponentToJoin() {
 
                 startBoardPolling();
             }
-
         } catch (error) {
             console.error(error);
         }
-
     }, 1000);
+
+    // Countdown display
+    waitingCountdownInterval = setInterval(() => {
+        secondsLeft--;
+
+        waitingMessage.textContent =
+            `Waiting for another player... (${secondsLeft}s)`;
+
+        if (secondsLeft <= 0) {
+            clearInterval(waitingCountdownInterval);
+            waitingCountdownInterval = null;
+        }
+    }, 1000);
+
+    // Actual timeout
+    waitingTimeout = setTimeout(() => {
+        clearWaitingTimers();
+
+        returnToLobby();
+
+        showPopup(
+            "Waiting time expired. Please create or join a game again."
+        );
+    }, WAITING_TIMEOUT_SECONDS * 1000);
+}
+
+function clearWaitingTimers() {
+    if (waitingInterval) {
+        clearInterval(waitingInterval);
+        waitingInterval = null;
+    }
+
+    if (waitingTimeout) {
+        clearTimeout(waitingTimeout);
+        waitingTimeout = null;
+    }
+}
+
+function returnToLobby() {
+    stopBoardPolling();
+    clearWaitingTimers();
+
+    gameStarted = false;
+    gameFinished = false;
+    currentTurn = "X";
+
+    gameKey = null;
+    playerTile = null;
+
+    cells.forEach(cell => {
+        cell.textContent = "";
+        cell.disabled = true;
+    });
+
+    gameKeyInput.value = "";
+    displayKey.textContent = "";
+
+    // waiting.hidden = true;
+    game.hidden = true;
+    lobby.hidden = false;
 }
 
 // start game from join
@@ -95,7 +168,7 @@ joinButton.addEventListener("click", async () => {
         gameStarted = true;
         lobby.hidden = true;
         game.hidden = false;
-        waiting.hidden = false;
+        // waiting.hidden = false;
 
         startBoardPolling();
 
@@ -207,11 +280,15 @@ async function refreshBoard() {
     // Check draw after checking winner
     if (isDraw(board)) {
         gameFinished = true;
+        gameStarted = false;
+
         updateBoardInteractivity();
         stopBoardPolling();
 
-        showPopup("It's a draw!");
+        restartButton.hidden = true;
+
         await handleDraw();
+
         return;
     }
 
@@ -312,11 +389,8 @@ async function restartBoard() {
 async function handleDraw() {
     restartButton.hidden = true;
 
-    showPopup("It's a draw! Restarting in 3...");
-
     for (let seconds = 3; seconds > 0; seconds--) {
-        document.getElementById("modalMessage").textContent =
-            `It's a draw! Restarting in ${seconds}...`;
+        showPopup(`It's a draw! Restarting in ${seconds}...`);
 
         await new Promise(resolve =>
             setTimeout(resolve, 1000)
@@ -328,9 +402,8 @@ async function handleDraw() {
 
 async function restartGame() {
     try {
-        if (playerTile === "X") {
-            await resetGame(gameKey);
-        }
+        // SAME game key
+        await resetGame(gameKey);
 
         cells.forEach(cell => {
             cell.textContent = "";
@@ -341,8 +414,11 @@ async function restartGame() {
         gameStarted = true;
         currentTurn = "X";
 
-        // closePopup();
+        restartButton.hidden = true;
 
+        closePopup();
+
+        updateBoardInteractivity();
         startBoardPolling();
 
     } catch (error) {
