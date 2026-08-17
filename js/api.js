@@ -14,7 +14,7 @@ async function checkGame(key) {
         `${API_BASE}/check?key=${encodeURIComponent(key)}`
     );
 
-    return response.text();
+    return Boolean(response.text());
 }
 
 async function getBoard(key) {
