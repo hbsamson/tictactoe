@@ -26,8 +26,7 @@
         <section id="waiting" hidden>
             <h2>Waiting for another player...</h2>
             <p>
-                Game Key:
-                <span id="displayKey"></span>
+                Game Key: <span id="displayKey"></span>
             </p>
         </section>
 
@@ -41,11 +40,11 @@
                 <button class="cell" data-x="0" data-y="0"></button>
                 <button class="cell" data-x="1" data-y="0"></button>
                 <button class="cell" data-x="2" data-y="0"></button>
-
+                <br>
                 <button class="cell" data-x="0" data-y="1"></button>
                 <button class="cell" data-x="1" data-y="1"></button>
                 <button class="cell" data-x="2" data-y="1"></button>
-
+                <br>
                 <button class="cell" data-x="0" data-y="2"></button>
                 <button class="cell" data-x="1" data-y="2"></button>
                 <button class="cell" data-x="2" data-y="2"></button>
@@ -55,7 +54,30 @@
                 Exit Game
             </button>
 
+            <div id="overlay" class="overlay hidden">
+                <div class="modal">
+                    <p id="modalMessage"></p>
+
+                    <button id="restartButton" hidden>
+                        Restart Game
+                    </button>
+                </div>
+            </div>
+
+            <div id="overlay" class="overlay hidden">
+            <div class="modal">
+                <h2 id="modalTitle"></h2>
+                <p id="modalMessage"></p>
+
+                <button id="modalButton">
+                    OK
+                </button>
+            </div>
+        </div>
+
         </section>
+
+        
 
     </main>
     <script src="js/api.js"></script>

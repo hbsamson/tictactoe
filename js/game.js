@@ -15,12 +15,12 @@ const game = document.getElementById("game");
 
 const createButton = document.getElementById("createButton");
 const joinButton = document.getElementById("joinButton");
+const restartButton = document.getElementById("restartButton");
 
 const gameKeyInput = document.getElementById("gameKey");
 const displayKey = document.getElementById("displayKey");
 
 const statusText = document.getElementById("status");
-
 
 const cells = document.querySelectorAll(".cell");
 
@@ -104,6 +104,7 @@ joinButton.addEventListener("click", async () => {
         showPopup("Unable to join game.");
     }
 });
+
 function startBoardPolling() {
     // Prevent multiple polling intervals
     if (boardPollingInterval) {
@@ -170,6 +171,9 @@ function parseBoard(boardString) {
 
 async function refreshBoard() {
     const boardString = await getBoard(gameKey);
+    if (boardString === "[GAME NOT YET STARTED]" || boardString === "[EXIT]") {
+        return;
+    }
     const board = parseBoard(boardString);
     console.log("Board:", board);
 
@@ -187,8 +191,8 @@ async function refreshBoard() {
         }
         gameFinished = true;
         
-        stopBoardPolling();
         updateBoardInteractivity();
+        stopBoardPolling();
 
         showPopup(
             winner === playerTile
@@ -203,11 +207,11 @@ async function refreshBoard() {
     // Check draw after checking winner
     if (isDraw(board)) {
         gameFinished = true;
-        stopBoardPolling();
         updateBoardInteractivity();
+        stopBoardPolling();
 
         showPopup("It's a draw!");
-        await restartBoard();
+        await handleDraw();
         return;
     }
 
@@ -241,6 +245,7 @@ function updateBoardInteractivity() {
         ? "Your turn"
         : "Waiting for opponent...";
 }
+
 function getWinner(board) {
     const lines = [
         // rows
@@ -271,7 +276,6 @@ function getWinner(board) {
 
 function isDraw(board) {
     let turnCount = 0;
-    console.log("check draw:", board);
 
     for (const tile of board) {
         if (tile === "X" || tile === "O") {
@@ -305,6 +309,47 @@ async function restartBoard() {
     }
 }
 
+async function handleDraw() {
+    restartButton.hidden = true;
+
+    showPopup("It's a draw! Restarting in 3...");
+
+    for (let seconds = 3; seconds > 0; seconds--) {
+        document.getElementById("modalMessage").textContent =
+            `It's a draw! Restarting in ${seconds}...`;
+
+        await new Promise(resolve =>
+            setTimeout(resolve, 1000)
+        );
+    }
+
+    await restartGame();
+}
+
+async function restartGame() {
+    try {
+        if (playerTile === "X") {
+            await resetGame(gameKey);
+        }
+
+        cells.forEach(cell => {
+            cell.textContent = "";
+            cell.disabled = true;
+        });
+
+        gameFinished = false;
+        gameStarted = true;
+        currentTurn = "X";
+
+        // closePopup();
+
+        startBoardPolling();
+
+    } catch (error) {
+        console.error("Unable to restart game:", error);
+    }
+}
+
 function showPopup(message) {
     document.getElementById("modalMessage").textContent =
         message;
@@ -312,4 +357,21 @@ function showPopup(message) {
     document
         .getElementById("overlay")
         .classList.remove("hidden");
+}
+
+restartButton.addEventListener("click", async () => {
+    restartButton.disabled = true;
+
+    await clearBoardUI();
+
+    restartButton.disabled = false;
+});
+
+function clearBoardUI() {
+    cells.forEach(cell => {
+        cell.textContent = "";
+        cell.disabled = true;
+    });
+
+    currentTurn = "X";
 }
