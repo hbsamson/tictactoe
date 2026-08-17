@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css">
+    <title>Hannah's TicTacToe</title>
+</head>
+<body>
+    <main class="app">
+
+        <section id="lobby">
+            <h1>Hanni Tic-Tac-Toe</h1>
+
+            <input id="gameKey" type="text" placeholder="Enter game key">
+
+            <button id="createButton">
+                Create Game
+            </button>
+
+            <button id="joinButton">
+                Join Game
+            </button>
+        </section>
+
+        <section id="waiting" hidden>
+            <h2>Waiting for another player...</h2>
+            <p>
+                Game Key:
+                <span id="displayKey"></span>
+            </p>
+        </section>
+
+        <section id="game" hidden>
+
+            <p id="status">
+                Waiting...
+            </p>
+
+            <div id="board">
+                <button class="cell" data-x="0" data-y="0"></button>
+                <button class="cell" data-x="1" data-y="0"></button>
+                <button class="cell" data-x="2" data-y="0"></button>
+
+                <button class="cell" data-x="0" data-y="1"></button>
+                <button class="cell" data-x="1" data-y="1"></button>
+                <button class="cell" data-x="2" data-y="1"></button>
+
+                <button class="cell" data-x="0" data-y="2"></button>
+                <button class="cell" data-x="1" data-y="2"></button>
+                <button class="cell" data-x="2" data-y="2"></button>
+            </div>
+
+            <button id="exitButton">
+                Exit Game
+            </button>
+
+        </section>
+
+    </main>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
