@@ -1,42 +1,39 @@
-const API_BASE =
-    "http://localhost:8080/tictactoe/tictactoeserver";
+const DEFAULT_API_BASE = "http://localhost:8080/tictactoe/tictactoeserver";
+const API_BASE = window.TICTACTOE_API_BASE || DEFAULT_API_BASE;
 
-async function createGame(key) {
-    const response = await fetch(
-        `${API_BASE}/createGame?key=${encodeURIComponent(key)}`
-    );
-
-    return response.text();
+export class ApiError extends Error {
+    constructor(message, status = 0) {
+        super(message);
+        this.name = "ApiError";
+        this.status = status;
+    }
 }
 
-async function checkGame(key) {
-    const response = await fetch(
-        `${API_BASE}/check?key=${encodeURIComponent(key)}`
-    );
+async function request(endpoint, params) {
+    const url = new URL(`${API_BASE}/${endpoint}`);
+    Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
 
-    return Boolean(response.text());
+    let response;
+    try {
+        response = await fetch(url, { headers: { Accept: "text/plain" } });
+    } catch {
+        throw new ApiError("The game server could not be reached.");
+    }
+
+    const body = (await response.text()).trim();
+    if (!response.ok) throw new ApiError(body || `Server request failed (${response.status}).`, response.status);
+    return body;
 }
 
-async function getBoard(key) {
-    const response = await fetch(
-        `${API_BASE}/board?key=${encodeURIComponent(key)}`
-    );
-
-    return response.text();
-}
-
-async function makeMove(key, tile, x, y) {
-    const response = await fetch(
-        `${API_BASE}/move?key=${encodeURIComponent(key)}&tile=${tile}&y=${y}&x=${x}`
-    );
-
-    return response.text();
-}
-
-async function resetGame(key) {
-    const response = await fetch(
-        `${API_BASE}/reset?key=${encodeURIComponent(key)}`
-    );
-
-    return response.text();
-}
+export const gameApi = {
+    create: (key) => request("createGame", { key }),
+    check: async (key) => (await request("check", { key })).toLowerCase() === "true",
+    board: (key) => request("board", { key }),
+    move: (key, tile, x, y) => request("move", { key, tile, y, x }),
+    reset: (key) => request("reset", { key }),
+    resetUrl: (key) => {
+        const url = new URL(`${API_BASE}/reset`);
+        url.searchParams.set("key", key);
+        return url.toString();
+    }
+};
