@@ -1,87 +1,116 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#090b12">
+    <meta name="description" content="A responsive two-player local Tic-Tac-Toe game.">
     <link rel="stylesheet" href="css/style.css">
-    <title>Hannah's TicTacToe</title>
+    <title>Hannah Tic-Tac-Toe</title>
 </head>
 <body>
-    <main class="app">
+    <div class="city" aria-hidden="true"></div>
 
-        <section id="lobby">
-            <h1>Hanni Tic-Tac-Toe</h1>
+    <main class="app-shell">
+        <header class="brand-bar">
+            <a class="brand" href="./" aria-label="Hanni Tic-Tac-Toe home">
+                <span>Persona 5 Royal Themed <strong>Tic-Tac-Toe</strong></span>
+            </a>
+            <span></span>
+            <span id="connectionStatus" class="connection-pill" data-state="ready">Server ready</span>
+        </header>
 
-            <input id="gameKey" type="text" placeholder="Enter game key">
-
-            <button id="createButton">
-                Create Game
-            </button>
-
-            <button id="joinButton">
-                Join Game
-            </button>
-        </section>
-
-        <section id="waitingForPlayer" hidden>
-            <h2>Waiting for another player...</h2>
-            <p>
-                Game Key: <span id="displayKey"></span>
-            </p>
-        </section>
-
-        <section id="game" hidden>
-
-            <p id="status">
-                Waiting...
-            </p>
-
-            <div id="board">
-                <button class="cell" data-x="0" data-y="0"></button>
-                <button class="cell" data-x="1" data-y="0"></button>
-                <button class="cell" data-x="2" data-y="0"></button>
-                <br>
-                <button class="cell" data-x="0" data-y="1"></button>
-                <button class="cell" data-x="1" data-y="1"></button>
-                <button class="cell" data-x="2" data-y="1"></button>
-                <br>
-                <button class="cell" data-x="0" data-y="2"></button>
-                <button class="cell" data-x="1" data-y="2"></button>
-                <button class="cell" data-x="2" data-y="2"></button>
-            </div>
-
-            <button id="exitButton">
-                Exit Game
-            </button>
-
-            <div id="overlay" class="overlay hidden">
-                <div class="modal">
-                    <p id="modalMessage"></p>
-
-                    <button id="restartButton" hidden>
-                        Restart Game
-                    </button>
+        <section id="lobbyView" class="lobby view" aria-labelledby="lobbyTitle">
+            <div class="hero-copy">
+                <p class="eyebrow">Two confidants · One board</p>
+                <h1 id="lobbyTitle">Make your move.<br><span>Steal the win.</span></h1>
+                <p class="intro">Create a local room, share the key, and challenge a friend</p>
+                <div class="how-to" aria-label="How to play">
+                    <span><b>01</b> Create a room</span>
+                    <span><b>02</b> Share the key</span>
+                    <span><b>03</b> Take the grid</span>
                 </div>
             </div>
 
-            <div id="overlay" class="overlay hidden">
-            <div class="modal">
-                <h2 id="modalTitle"></h2>
-                <p id="modalMessage"></p>
-
-                <button id="modalButton">
-                    OK
-                </button>
-            </div>
-        </div>
-
+            <form id="lobbyForm" class="lobby-card" novalidate>
+                <div class="card-heading">
+                    <div><p class="eyebrow">Local match</p><h2>Start the showdown</h2></div>
+                    <span class="mini-grid" aria-hidden="true">×○<br>○×</span>
+                </div>
+                <label for="gameKey">Game key</label>
+                <div class="key-field">
+                    <input id="gameKey" name="gameKey" type="text" maxlength="32" autocomplete="off" spellcheck="false" placeholder="e.g. NIGHT-42">
+                    <button id="generateKeyButton" class="icon-button" type="button" aria-label="Generate a new key" title="Generate key">↻</button>
+                </div>
+                <p id="keyHint" class="field-hint">For custom keys, use 3-6 alphanumeric characters (letters and numbers only)</p>
+                <div class="lobby-actions">
+                    <button id="createButton" class="button button-primary" type="submit">Create game <span>→</span></button>
+                    <button id="joinButton" class="button button-secondary" type="button">Join with key</button>
+                </div>
+            </form>
         </section>
 
-        
+        <section id="waitingView" class="waiting view" hidden aria-labelledby="waitingTitle">
+            <div class="waiting-card">
+                <span class="radar" aria-hidden="true"><i></i></span>
+                <p class="eyebrow">Room created</p>
+                <h1 id="waitingTitle">Waiting for your rival</h1>
+                <p>Share this game key with the second player</p>
+                <button id="copyWaitingKey" class="room-key room-key-large" type="button" aria-label="Copy game key"><span id="waitingKey"></span><small>Copy</small></button>
+                <p id="waitingStatus" class="waiting-status" aria-live="polite">Checking for player two…</p>
+                <button id="cancelWaitingButton" class="text-button" type="button">Cancel room</button>
+            </div>
+        </section>
 
+        <section id="gameView" class="game view" hidden aria-labelledby="gameHeading">
+            <div class="game-topbar">
+                <div><p class="eyebrow">Live match</p><h1 id="gameHeading">The grid awaits</h1></div>
+                <div class="room-actions">
+                    <button id="copyGameKey" class="room-key" type="button" aria-label="Copy game key">Room <strong id="activeGameKey"></strong><small>Copy</small></button>
+                    <button id="exitButton" class="button button-ghost" type="button">Exit</button>
+                </div>
+            </div>
+
+            <div class="game-layout">
+                <aside class="player-card player-x" id="playerXCard">
+                    <span class="player-symbol">X</span><div><small>Player one</small><strong id="playerXLabel">Opponent</strong></div><b id="xScore" class="score">0</b>
+                </aside>
+                <div class="board-column">
+                    <div id="turnStatus" class="turn-status" role="status" aria-live="polite"><span class="turn-dot"></span><strong id="statusText">Preparing match…</strong></div>
+                    <div id="board" class="board" role="grid" aria-label="Tic-Tac-Toe board">
+                        <button class="cell" type="button" role="gridcell" data-index="0" data-x="0" data-y="0" data-label="Top left" aria-label="Top left, empty" disabled></button>
+                        <button class="cell" type="button" role="gridcell" data-index="1" data-x="1" data-y="0" data-label="Top center" aria-label="Top center, empty" disabled></button>
+                        <button class="cell" type="button" role="gridcell" data-index="2" data-x="2" data-y="0" data-label="Top right" aria-label="Top right, empty" disabled></button>
+                        <button class="cell" type="button" role="gridcell" data-index="3" data-x="0" data-y="1" data-label="Middle left" aria-label="Middle left, empty" disabled></button>
+                        <button class="cell" type="button" role="gridcell" data-index="4" data-x="1" data-y="1" data-label="Center" aria-label="Center, empty" disabled></button>
+                        <button class="cell" type="button" role="gridcell" data-index="5" data-x="2" data-y="1" data-label="Middle right" aria-label="Middle right, empty" disabled></button>
+                        <button class="cell" type="button" role="gridcell" data-index="6" data-x="0" data-y="2" data-label="Bottom left" aria-label="Bottom left, empty" disabled></button>
+                        <button class="cell" type="button" role="gridcell" data-index="7" data-x="1" data-y="2" data-label="Bottom center" aria-label="Bottom center, empty" disabled></button>
+                        <button class="cell" type="button" role="gridcell" data-index="8" data-x="2" data-y="2" data-label="Bottom right" aria-label="Bottom right, empty" disabled></button>
+                    </div>
+                    <p class="you-are">You are <strong id="playerTile">—</strong></p>
+                </div>
+                <aside class="player-card player-o" id="playerOCard">
+                    <span class="player-symbol">O</span><div><small>Player two</small><strong id="playerOLabel">Opponent</strong></div><b id="oScore" class="score">0</b>
+                </aside>
+            </div>
+        </section>
     </main>
-    <script src="js/api.js"></script>
-    <script src="js/app.js"></script>
-    <script src="js/game.js"></script>
+
+    <div id="modalOverlay" class="modal-overlay" hidden>
+        <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalMessage">
+            <button id="modalCloseButton" class="modal-close" type="button" aria-label="Close">×</button>
+            <span id="modalSymbol" class="modal-symbol" aria-hidden="true">XO</span>
+            <p id="modalEyebrow" class="eyebrow">Match update</p>
+            <h2 id="modalTitle">Game update</h2>
+            <p id="modalMessage"></p>
+            <div class="modal-actions">
+                <button id="modalPrimaryButton" class="button button-primary" type="button">Continue</button>
+                <button id="modalSecondaryButton" class="button button-secondary" type="button" hidden>Back</button>
+            </div>
+        </section>
+    </div>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <script type="module" src="js/app.js"></script>
 </body>
 </html>
