@@ -14,7 +14,7 @@
     <main class="app-shell">
         <header class="brand-bar">
             <a class="brand" href="./" aria-label="Hanni Tic-Tac-Toe home">
-                <span>Persona 5 Royal Themed <strong>Tic-Tac-Toe</strong></span>
+                <span>Hanni<strong>Tic-Tac-Toe</strong></span>
             </a>
             <span></span>
             <span id="connectionStatus" class="connection-pill" data-state="ready">Server ready</span>
@@ -24,9 +24,9 @@
             <div class="hero-copy">
                 <p class="eyebrow">Two confidants · One board</p>
                 <h1 id="lobbyTitle">Make your move.<br><span>Steal the win.</span></h1>
-                <p class="intro">Create a local room, share the key, and challenge a friend</p>
+                
                 <div class="how-to" aria-label="How to play">
-                    <span><b>01</b> Create a room</span>
+                    <span><b>01</b> Create a local room</span>
                     <span><b>02</b> Share the key</span>
                     <span><b>03</b> Take the grid</span>
                 </div>
@@ -89,6 +89,18 @@
                         <button class="cell" type="button" role="gridcell" data-index="8" data-x="2" data-y="2" data-label="Bottom right" aria-label="Bottom right, empty" disabled></button>
                     </div>
                     <p class="you-are">You are <strong id="playerTile">—</strong></p>
+                    <div class="cheer-panel" aria-live="polite">
+                        <div class="cheer-header">
+                            <p class="eyebrow">Cheer squad</p>
+                            <div class="cheer-buttons" aria-label="Pre-written encouragements">
+                                <button class="cheer-button" type="button" data-message="Nice move!">Nice move!</button>
+                                <button class="cheer-button" type="button" data-message="You got this!">You got this!</button>
+                                <button class="cheer-button" type="button" data-message="Defense!">Defense!</button>
+                                <button class="cheer-button" type="button" data-message="Clutch play!">Clutch play!</button>
+                            </div>
+                        </div>
+                        <ul id="cheerFeed" class="cheer-feed" aria-live="polite"></ul>
+                    </div>
                 </div>
                 <aside class="player-card player-o" id="playerOCard">
                     <span class="player-symbol">O</span><div><small>Player two</small><strong id="playerOLabel">Opponent</strong></div><b id="oScore" class="score">0</b>

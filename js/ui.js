@@ -15,7 +15,8 @@ export const elements = {
     waitingKey: byId("waitingKey"), waitingStatus: byId("waitingStatus"),
     copyWaitingKey: byId("copyWaitingKey"), cancelWaiting: byId("cancelWaitingButton"),
     activeGameKey: byId("activeGameKey"), copyGameKey: byId("copyGameKey"), exit: byId("exitButton"),
-    board: byId("board"), cells
+    board: byId("board"), cells,
+    cheerFeed: byId("cheerFeed"), cheerButtons: [...document.querySelectorAll(".cheer-button")]
 };
 
 export function showView(name) {
@@ -45,30 +46,41 @@ export function setOffline() {
 
 export function setKeyError(message = "") {
     elements.keyInput.setAttribute("aria-invalid", String(Boolean(message)));
-    elements.keyHint.textContent = message || "Use 3–32 letters, numbers, dashes, or underscores.";
+    elements.keyHint.textContent = message || "Use 3-6 alphanumeric characters (letters and numbers only)";
     elements.keyHint.classList.toggle("error", Boolean(message));
 }
 
-export function setRoom(key, tile) {
+export function setRoom(key, tile, spectator = false) {
     elements.waitingKey.textContent = key;
     elements.activeGameKey.textContent = key;
-    byId("playerTile").textContent = tile;
-    byId("playerXLabel").textContent = tile === "X" ? "You" : "Opponent";
-    byId("playerOLabel").textContent = tile === "O" ? "You" : "Opponent";
+    byId("playerTile").textContent = spectator ? "Viewer" : tile || "—";
+    byId("playerXLabel").textContent = spectator ? "Player one" : tile === "X" ? "You" : "Opponent";
+    byId("playerOLabel").textContent = spectator ? "Player two" : tile === "O" ? "You" : "Opponent";
 }
 
-export function renderBoard(board, { tile, turn, finished = false, winningLine = [] }) {
-    const myTurn = tile === turn && !finished;
+export function renderBoard(board, { tile, turn, finished = false, winningLine = [], spectator = false }) {
+    const isInteractive = !spectator && tile === turn && !finished;
     cells.forEach((cell, index) => {
         const value = board[index];
         cell.textContent = value;
         cell.dataset.value = value;
-        cell.disabled = !myTurn || Boolean(value);
+        cell.disabled = !isInteractive || Boolean(value);
         cell.classList.toggle("winning", winningLine.includes(index));
         cell.setAttribute("aria-label", `${cell.dataset.label}, ${value || "empty"}`);
     });
-    byId("playerXCard").classList.toggle("active", turn === "X" && !finished);
-    byId("playerOCard").classList.toggle("active", turn === "O" && !finished);
+    byId("playerXCard").classList.toggle("active", turn === "X" && !finished && !spectator);
+    byId("playerOCard").classList.toggle("active", turn === "O" && !finished && !spectator);
+}
+
+export function renderCheers(messages = []) {
+    const feed = elements.cheerFeed;
+    feed.innerHTML = "";
+    messages.slice(-6).forEach(({ source, text }) => {
+        const item = document.createElement("li");
+        item.className = "cheer-item";
+        item.innerHTML = `<span>${source}</span><strong>${text}</strong>`;
+        feed.appendChild(item);
+    });
 }
 
 export function setStatus(message, state = "waiting") {
