@@ -168,9 +168,9 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(103, 213, 25
 .modal-close { position: absolute; top: 12px; right: 14px; width: 38px; height: 38px; border: 0; color: var(--muted); background: transparent; cursor: pointer; font-size: 27px; }
 .modal-symbol { display: grid; place-items: center; width: 76px; height: 76px; margin-bottom: 28px; color: var(--ink); background: var(--red); box-shadow: 7px 7px 0 var(--red-dark); font-size: 31px; font-weight: 950; }
 .modal > p:not(.eyebrow) { margin: 14px 0 28px; color: var(--muted); line-height: 1.6; }
-.toast { position: fixed; z-index: 30; right: 24px; bottom: 28px; min-width: 240px; max-width: min(360px, calc(100vw - 32px)); padding: 14px 18px 13px; border: 1px solid var(--line); color: var(--ink); background: linear-gradient(180deg, rgba(23,25,34,.96), rgba(12,14,21,.96)); box-shadow: var(--shadow); font-size: 12px; font-weight: 800; transform: translateY(20px); opacity: 0; transition: opacity .18s, transform .18s; }
+.toast { position: fixed; z-index: 30; top: 50%; left: 24px; min-width: 240px; max-width: min(360px, calc(100vw - 32px)); padding: 24px 30px 22px; color: var(--ink); background: url("../assets/dialogue2.png") center / 100% 100% no-repeat; font-size: 12px; font-weight: 800; text-align: center; transform: translate(-20px, -50%); opacity: 0; transition: opacity .18s, transform .18s; }
 .toast::before { content: ""; position: absolute; inset: 0 0 auto; height: 3px; background: var(--red); }
-.toast.visible { opacity: 1; transform: translateY(0); }
+.toast.visible { opacity: 1; transform: translate(0, -50%); }
 
 @media (max-width: 900px) {
     .lobby { grid-template-columns: minmax(0, 1fr); gap: 50px; padding-top: 55px; }

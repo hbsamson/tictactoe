@@ -1,5 +1,9 @@
 const byId = (id) => document.getElementById(id);
-const views = { lobby: byId("lobbyView"), waiting: byId("waitingView"), game: byId("gameView") };
+const views = { 
+    lobby: byId("lobbyView"), 
+    waiting: byId("waitingView"), 
+    game: byId("gameView") 
+};
 const cells = [...document.querySelectorAll(".cell")];
 const modal = {
     overlay: byId("modalOverlay"), eyebrow: byId("modalEyebrow"), symbol: byId("modalSymbol"),
@@ -54,8 +58,8 @@ export function setRoom(key, tile, spectator = false) {
     elements.waitingKey.textContent = key;
     elements.activeGameKey.textContent = key;
     byId("playerTile").textContent = spectator ? "Viewer" : tile || "—";
-    byId("playerXLabel").textContent = spectator ? "Player one" : tile === "X" ? "You" : "Opponent";
-    byId("playerOLabel").textContent = spectator ? "Player two" : tile === "O" ? "You" : "Opponent";
+    byId("playerXLabel").textContent = spectator ? "Player X" : tile === "X" ? "You" : "Opponent";
+    byId("playerOLabel").textContent = spectator ? "Player O" : tile === "O" ? "You" : "Opponent";
 }
 
 export function renderBoard(board, { tile, turn, finished = false, winningLine = [], spectator = false }) {
@@ -72,6 +76,16 @@ export function renderBoard(board, { tile, turn, finished = false, winningLine =
     byId("playerOCard").classList.toggle("active", turn === "O" && !finished && !spectator);
 }
 
+export function setStatus(message, state = "waiting") {
+    byId("statusText").textContent = message;
+    byId("turnStatus").dataset.state = state;
+}
+
+export function setScores(scores) {
+    byId("xScore").textContent = scores.X;
+    byId("oScore").textContent = scores.O;
+}
+
 export function renderCheers(messages = []) {
     const feed = elements.cheerFeed;
     feed.innerHTML = "";
@@ -81,16 +95,6 @@ export function renderCheers(messages = []) {
         item.innerHTML = `<span>${source}</span><strong>${text}</strong>`;
         feed.appendChild(item);
     });
-}
-
-export function setStatus(message, state = "waiting") {
-    byId("statusText").textContent = message;
-    byId("turnStatus").dataset.state = state;
-}
-
-export function setScores(scores) {
-    byId("xScore").textContent = scores.X;
-    byId("oScore").textContent = scores.O;
 }
 
 export function showModal(options) {
@@ -133,6 +137,6 @@ export function toast(message) {
     requestAnimationFrame(() => element.classList.add("visible"));
     toastTimer = window.setTimeout(() => {
         element.classList.remove("visible");
-        window.setTimeout(() => { element.hidden = true; }, 180);
+        window.setTimeout(() => { element.hidden = true; }, 200);
     }, 2200);
 }

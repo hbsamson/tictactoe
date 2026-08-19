@@ -4,9 +4,9 @@ export const BOARD_PLAYING = "[GAME ALREADY STARTED]";
 export const GAME_EXITED = "[EXIT]";
 
 export const WINNING_LINES = [
-    [0, 1, 2], [3, 4, 5], [6, 7, 8],
-    [0, 3, 6], [1, 4, 7], [2, 5, 8],
-    [0, 4, 8], [2, 4, 6]
+    [0, 1, 2], [3, 4, 5], [6, 7, 8], // horizontal
+    [0, 3, 6], [1, 4, 7], [2, 5, 8], // vertical
+    [0, 4, 8], [2, 4, 6] // diagonal
 ];
 
 export function parseBoard(payload) {
@@ -27,7 +27,9 @@ export function currentTurn(board) {
 export function resultFor(board) {
     for (const line of WINNING_LINES) {
         const [a, b, c] = line;
-        if (board[a] && board[a] === board[b] && board[a] === board[c]) return { type: "win", winner: board[a], line };
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+            return { type: "win", winner: board[a], line };
+        }
     }
     return board.every(Boolean) ? { type: "draw", winner: null, line: [] } : null;
 }
