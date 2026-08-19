@@ -1,0 +1,38 @@
+@media (max-width: 900px) {
+    .lobby { grid-template-columns: minmax(0, 1fr); gap: 50px; padding-top: 55px; }
+    .hero-copy { text-align: center; }
+    .intro { margin-inline: auto; }
+    .how-to { justify-content: center; }
+    .lobby-card { width: min(540px, 100%); margin-inline: auto; }
+    .game-layout { grid-template-columns: 1fr 1fr; width: min(560px, 100%); margin-inline: auto; }
+    .board-column { grid-column: 1 / -1; grid-row: 1; width: min(500px, 100%); margin-inline: auto; }
+    .player-card { grid-row: 2; }
+}
+
+@media (max-width: 600px) {
+    .app-shell { width: min(100% - 24px, 1180px); }
+    .brand-bar { height: 72px; }
+    .connection-pill { font-size: 9px; }
+    .view { min-height: calc(100vh - 72px); }
+    .lobby { padding: 42px 0 80px; }
+    .hero-copy h1 { max-width: 100%; font-size: clamp(39px, 12.5vw, 52px); overflow-wrap: anywhere; }
+    .intro { font-size: 15px; }
+    .how-to { display: grid; justify-content: start; margin-left: 10px; text-align: left; }
+    .lobby-card { padding: 26px 20px; }
+    .game { padding-top: 25px; }
+    .game-topbar { align-items: flex-start; }
+    .game-topbar h1 { font-size: 30px; }
+    .room-actions { flex-direction: column; align-items: stretch; }
+    .room-key { justify-content: center; }
+    .game-layout { gap: 14px; }
+    .player-card { padding: 12px; }
+    .player-symbol { width: 37px; height: 37px; font-size: 22px; }
+    .player-card strong { font-size: 12px; }
+    .score { font-size: 27px; }
+    .board { gap: 6px; padding: 7px; }
+    .cell { font-size: clamp(42px, 18vw, 72px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}

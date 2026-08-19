@@ -1,0 +1,31 @@
+.game { padding: 40px 0 90px; }
+.game-topbar { display: flex; align-items: center; justify-content: space-between; gap: 25px; margin-bottom: 36px; }
+.game-topbar h1 { margin: 0; font-size: clamp(30px, 5vw, 56px); letter-spacing: -.05em; text-transform: uppercase; }
+.room-actions { display: flex; gap: 10px; }
+.game-layout { display: grid; grid-template-columns: minmax(170px, 220px) minmax(300px, 520px) minmax(170px, 220px); justify-content: center; align-items: center; gap: clamp(18px, 4vw, 55px); }
+.player-card { position: relative; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; min-width: 0; padding: 18px; border: 1px solid var(--line); background: rgba(15,17,25,.82); opacity: .62; transition: opacity .2s, border-color .2s, transform .2s; }
+.player-card.active { opacity: 1; border-color: rgba(255,255,255,.35); transform: translateY(-4px); }
+.player-symbol { display: grid; place-items: center; width: 44px; height: 44px; font-size: 27px; font-weight: 950; }
+.player-x .player-symbol { color: #07131a; background: var(--blue); }
+.player-o .player-symbol { color: #1a0d00; background: var(--yellow); border-radius: 50%; }
+.player-card small { display: block; margin-bottom: 3px; color: var(--muted); font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .12em; }
+.player-card strong { font-size: 14px; }
+.score { grid-column: 1 / -1; padding-top: 10px; border-top: 1px solid var(--line); font-size: 36px; letter-spacing: -.05em; }
+.score::before { content: "Score "; color: var(--muted); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; }
+.board-column { min-width: 0; }
+.turn-status { display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 42px; margin-bottom: 15px; border: 1px solid var(--line); background: rgba(12,14,21,.8); color: #c7c8ce; font-size: 12px; letter-spacing: .04em; }
+.turn-dot { width: 7px; height: 7px; border-radius: 50%; background: #777; }
+.turn-status[data-state="your-turn"] .turn-dot { background: #55d98a; box-shadow: 0 0 10px #55d98a; }
+.turn-status[data-state="finished"] .turn-dot { background: var(--red); }
+.turn-status[data-state="offline"] .turn-dot { background: var(--yellow); }
+.board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; padding: 11px; border: 1px solid rgba(255,255,255,.16); background: rgba(7,8,13,.82); box-shadow: var(--shadow); transform: rotate(-.35deg); }
+.cell { position: relative; display: grid; place-items: center; aspect-ratio: 1; overflow: hidden; border: 1px solid rgba(255,255,255,.11); background: rgba(255,255,255,.045); cursor: pointer; font-size: clamp(48px, 8vw, 84px); font-weight: 950; line-height: 1; transition: background .15s, transform .15s, border-color .15s; }
+.cell:not(:disabled):hover { z-index: 1; border-color: rgba(103,213,255,.7); background: rgba(103,213,255,.1); transform: scale(1.035); }
+.cell:disabled { cursor: default; }
+.cell[data-value="X"] { color: var(--blue); text-shadow: 4px 4px 0 rgba(24,97,130,.55); }
+.cell[data-value="O"] { color: var(--yellow); text-shadow: 4px 4px 0 rgba(130,84,14,.55); }
+.cell.winning { border-color: var(--red); background: rgba(255,59,48,.17); animation: win-cell .75s ease-in-out infinite alternate; }
+.you-are { margin: 14px 0 0; color: var(--muted); text-align: center; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .13em; }
+.you-are strong { color: var(--ink); }
+
+@keyframes win-cell { to { box-shadow: inset 0 0 30px rgba(255,59,48,.28); } }
