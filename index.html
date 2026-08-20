@@ -23,7 +23,7 @@
         <section id="lobbyView" class="lobby view" aria-labelledby="lobbyTitle">
             <div class="hero-copy">
                 <p class="eyebrow">Two confidants · One board</p>
-                <h1 id="lobbyTitle">Make your move.<br><span>Steal the win.</span></h1>
+                <h1 id="lobbyTitle">tic-tac-toe.<br><span>Steal the win.</span></h1>
                 
                 <div class="how-to" aria-label="How to play">
                     <span><b>01</b> Create a local room</span>
@@ -108,6 +108,17 @@
             </div>
         </section>
     </main>
+
+    <div id="gameStartOverlay" class="game-start-overlay" hidden aria-hidden="true">
+        <div class="game-start-speedlines"></div>
+        <div class="game-start-impact" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="game-start-art" aria-hidden="true"></div>
+        <div class="game-start-copy" aria-hidden="true">
+            <span class="game-start-kicker">Room locked · Rival found</span>
+            <strong class="game-start-word">Take<br>the grid</strong>
+            <span id="gameStartRole" class="game-start-role">You play X</span>
+        </div>
+    </div>
 
     <div id="modalOverlay" class="modal-overlay" hidden>
         <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalMessage">

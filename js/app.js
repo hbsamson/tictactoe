@@ -5,7 +5,7 @@ import { closeModal,
     renderBoard, 
     renderCheers, 
     setBusy, setKeyError, setOffline, setRoom, setScores, setStatus, 
-    showModal, showView, 
+    playGameStart, showModal, showView,
     toast } from "./ui.js";
 
 const POLL_DELAY = 800;
@@ -89,6 +89,7 @@ async function enterRoom(intent) {
         } else if (playerTile === "O") {
             state.view = "playing";
             showView("game");
+            playGameStart(state.tile);
             setStatus("X takes the first move", "waiting");
             schedulePoll(0);
             if (intent === "create") toast("That key existed, so you joined as O.");
@@ -146,6 +147,7 @@ async function pollServer() {
             if (started) {
                 state.view = "playing";
                 showView("game");
+                playGameStart(state.tile);
                 setStatus(state.tile === "X" ? "Your turn" : "Opponent's turn", state.tile === "X" ? "your-turn" : "waiting");
                 toast("Player two joined. Game on!");
             }
@@ -272,6 +274,7 @@ async function joinRematch() {
         setRoom(state.key, state.tile);
         renderBoard(state.board, state);
         showView("game");
+        playGameStart(state.tile);
         setStatus("Opponent's turn", "waiting");
         schedulePoll(0);
     } catch (error) {
@@ -403,7 +406,9 @@ elements.board.addEventListener("click", (event) => { const cell = event.target.
 elements.exit.addEventListener("click", () => showModal({ eyebrow: "Leave match", symbol: "?", title: "Exit this game?", message: "The room will close for both players and the current round will end.", primaryLabel: "Exit game", secondaryLabel: "Keep playing", onPrimary: exitGame, onSecondary: closeModal }));
 
 window.addEventListener("pagehide", () => {
-    if (state.key && state.view !== "lobby" && !state.leaving && !state.spectator) fetch(gameApi.resetUrl(state.key), { keepalive: true }).catch(() => {});
+    if (state.key && state.view !== "lobby" && !state.leaving && !state.spectator) {
+        fetch(gameApi.resetUrl(state.key), { keepalive: true }).catch(() => {});
+    }
 });
 window.addEventListener("storage", hydrateCheerFromStorage);
 

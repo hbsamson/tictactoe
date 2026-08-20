@@ -12,6 +12,7 @@ const modal = {
 };
 let modalHandlers = {};
 let toastTimer;
+let gameStartTimer;
 
 export const elements = {
     lobbyForm: byId("lobbyForm"), keyInput: byId("gameKey"), keyHint: byId("keyHint"),
@@ -26,6 +27,28 @@ export const elements = {
 export function showView(name) {
     Object.entries(views).forEach(([viewName, view]) => { view.hidden = viewName !== name; });
     window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+export function playGameStart(tile) {
+    const overlay = byId("gameStartOverlay");
+    const role = byId("gameStartRole");
+    const duration = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 650 : 2250;
+
+    window.clearTimeout(gameStartTimer);
+    role.textContent = `You play ${tile}`;
+    overlay.hidden = false;
+    overlay.classList.remove("is-playing");
+    document.body.classList.add("game-starting");
+
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => overlay.classList.add("is-playing"));
+    });
+
+    gameStartTimer = window.setTimeout(() => {
+        overlay.classList.remove("is-playing");
+        overlay.hidden = true;
+        document.body.classList.remove("game-starting");
+    }, duration);
 }
 
 export function setBusy(busy) {
