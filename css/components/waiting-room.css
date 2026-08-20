@@ -1,12 +1,69 @@
-.waiting { display: grid; place-items: center; padding: 70px 0 110px; }
-.waiting-card { width: min(530px, 100%); padding: clamp(34px, 6vw, 65px); text-align: center; }
-.waiting-card h1 { margin: 0; font-size: clamp(26px, 3vw, 38px); letter-spacing: -.04em; }
-.waiting-card > p:not(.eyebrow):not(.waiting-status) { color: var(--muted); }
-.radar { position: relative; display: grid; place-items: center; width: 96px; height: 96px; margin: 0 auto 35px; border: 1px solid rgba(255,59,48,.5); border-radius: 50%; }
-.radar::before, .radar::after { content: ""; position: absolute; inset: 15px; border: 1px solid rgba(255,59,48,.3); border-radius: 50%; }
-.radar::after { inset: 34px; }
-.radar i { width: 9px; height: 9px; border-radius: 50%; background: var(--red); box-shadow: 0 0 20px var(--red); }
-.radar i::after { content: ""; position: absolute; inset: 0; border: 1px solid var(--red); border-radius: 50%; animation: radar 2s ease-out infinite; }
-.waiting-status { color: #8e929d; font-size: 12px; }
+.waiting {
+  display: grid;
+  place-items: center;
+  padding: 70px 0 110px;
+}
+.waiting-card {
+  width: min(530px, 100%);
+  padding: clamp(34px, 6vw, 65px);
+  text-align: center;
+}
+.waiting-card h1 {
+  margin: 0;
+  font-size: clamp(26px, 3vw, 38px);
+  letter-spacing: -0.04em;
+}
+.waiting-card > p:not(.eyebrow):not(.waiting-status) {
+  color: var(--muted);
+}
+.radar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 35px;
+  border: 1px solid rgba(255, 59, 48, 0.5);
+  border-radius: 50%;
+}
+.radar::before,
+.radar::after {
+  content: "";
+  position: absolute;
+  inset: 15px;
+  border: 1px solid rgba(255, 59, 48, 0.3);
+  border-radius: 50%;
+}
+.radar::after {
+  inset: 34px;
+}
+.radar i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 20px var(--red);
+}
+.radar i::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--red);
+  border-radius: 50%;
+  animation: radar 2s ease-out infinite;
+}
+.waiting-status {
+  color: #8e929d;
+  font-size: 12px;
+}
 
-@keyframes radar { from { transform: scale(.25); opacity: 1; } to { transform: scale(1.25); opacity: 0; } }
+@keyframes radar {
+  from {
+    transform: scale(0.25);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+}
