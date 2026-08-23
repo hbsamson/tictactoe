@@ -24,7 +24,7 @@
   cursor: wait;
 }
 .button-primary {
-  justify-content: space-between;
+  justify-content: center;
   background: var(--red);
   box-shadow: 6px 6px 0 var(--red-dark);
 }
@@ -69,6 +69,7 @@
 .room-key {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 9px;
   border: 1px solid var(--line);
   padding: 10px 13px;

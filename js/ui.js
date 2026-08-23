@@ -17,6 +17,7 @@ let gameStartTimer;
 
 export const elements = {
     lobbyForm: byId("lobbyForm"), keyInput: byId("gameKey"), keyHint: byId("keyHint"),
+    playerName: byId("playerName"), playerAvatar: byId("playerAvatar"), avatarPreview: byId("playerAvatarPreview"), previousAvatar: byId("previousAvatarButton"), nextAvatar: byId("nextAvatarButton"),
     generateKey: byId("generateKeyButton"), copyLobbyKey: byId("copyLobbyKeyButton"), create: byId("createButton"), join: byId("joinButton"),
     waitingKey: byId("waitingKey"), waitingStatus: byId("waitingStatus"),
     copyWaitingKey: byId("copyWaitingKey"), cancelWaiting: byId("cancelWaitingButton"),
@@ -57,6 +58,9 @@ export function setBusy(busy) {
     elements.keyInput.disabled = busy;
     elements.generateKey.disabled = busy;
     elements.copyLobbyKey.disabled = busy;
+    elements.playerName.disabled = busy;
+    elements.previousAvatar.disabled = busy;
+    elements.nextAvatar.disabled = busy;
     const connection = byId("connectionStatus");
     if (busy) {
         connection.textContent = "Connecting…";
@@ -83,13 +87,22 @@ export function setKeyError(message = "") {
     elements.keyHint.classList.toggle("error", Boolean(message));
 }
 
-export function setRoom(key, tile, spectator = false) {
+export function setRoom(key, tile, spectator = false, players = {}) {
     elements.waitingKey.textContent = key;
     elements.activeGameKey.textContent = key;
     byId("playerTile").textContent = spectator ? "Viewer" : tile || "—";
     byId("playerTileMobile").textContent = spectator ? "Viewer" : tile || "—";
-    byId("playerXLabel").textContent = spectator ? "Player X" : tile === "X" ? "You" : "Opponent";
-    byId("playerOLabel").textContent = spectator ? "Player O" : tile === "O" ? "You" : "Opponent";
+    setPlayer("X", players.X, spectator ? "Player X" : tile === "X" ? "You" : "Opponent");
+    setPlayer("O", players.O, spectator ? "Player O" : tile === "O" ? "You" : "Opponent");
+}
+
+function setPlayer(tile, player, fallbackName) {
+    byId(`player${tile}Label`).textContent = player?.name || fallbackName;
+    const avatar = byId(`player${tile}Avatar`);
+    avatar.hidden = !player?.avatar;
+    if (player?.avatar) avatar.src = `assets/icons/${player.avatar}${player.avatar === "ryuji" ? "-icon" : ""}.png`;
+    else avatar.removeAttribute("src");
+    avatar.alt = player?.name ? `${player.name}'s icon` : "";
 }
 
 export function renderBoard(board, { tile, turn, finished = false, winningLine = [], spectator = false, movePending = false }) {

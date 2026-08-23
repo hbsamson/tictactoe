@@ -44,6 +44,19 @@
                     <button id="copyLobbyKeyButton" class="icon-button" type="button" aria-label="Copy game key" title="Copy key"><i data-lucide="copy"></i></button>
                 </div>
                 <p id="keyHint" class="field-hint">For custom keys, use 4-6 alphanumeric characters (letters and numbers only)</p>
+                <div class="identity-fields">
+                    <div class="avatar-picker">
+                        <button id="previousAvatarButton" class="avatar-step avatar-step-previous" type="button" aria-label="Previous icon"><i data-lucide="chevron-left"></i></button>
+                        <div class="avatar-stage"><img id="playerAvatarPreview" src="assets/icons/ren.png" alt="Ren"></div>
+                        <button id="nextAvatarButton" class="avatar-step avatar-step-next" type="button" aria-label="Next icon"><i data-lucide="chevron-right"></i></button>
+                    </div>
+                    <div class="identity-controls">
+                        <label for="playerName">Player name</label>
+                        <input id="playerName" name="playerName" type="text" maxlength="10" autocomplete="nickname" value="Ren">
+                        <p class="field-hint name-hint">Maximum of 10 characters</p>
+                        <input id="playerAvatar" name="playerAvatar" type="hidden" value="ren">
+                    </div>
+                </div>
                 <div class="lobby-actions">
                     <button id="createButton" class="button button-primary" type="submit">Create game <i data-lucide="arrow-right">→</i></button>
                     <button id="joinButton" class="button button-secondary" type="button">Join with key</button>
@@ -75,11 +88,11 @@
             <div class="game-layout">
                 <div class="scoreboard" aria-label="Scoreboard">
                 <aside class="player-card player-x" id="playerXCard">
-                    <span class="player-symbol">X</span><div><small>Player one</small><strong id="playerXLabel">Opponent</strong></div><b id="xScore" class="score">0</b>
+                        <span class="player-symbol"><img id="playerXAvatar" alt=""><span>X</span></span><div><small>Player one</small><strong id="playerXLabel">Opponent</strong></div><b id="xScore" class="score">0</b>
                 </aside>
                 <span class="score-divider" aria-hidden="true">-</span>
                 <aside class="player-card player-o" id="playerOCard">
-                    <span class="player-symbol">O</span><div><small>Player two</small><strong id="playerOLabel">Opponent</strong></div><b id="oScore" class="score">0</b>
+                        <span class="player-symbol"><img id="playerOAvatar" alt=""><span>O</span></span><div><small>Player two</small><strong id="playerOLabel">Opponent</strong></div><b id="oScore" class="score">0</b>
                 </aside>
                 </div>
                 <div class="board-column">

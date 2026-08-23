@@ -12,7 +12,9 @@ const CONNECTION_POLL_DELAY = 5000;
 const KEY_PATTERN = /^[a-z0-9]{4,6}$/i;
 const CHEER_STORAGE_PREFIX = "tictactoe:cheers:";
 const SCORE_STORAGE_PREFIX = "tictactoe:scores:";
+const PLAYER_STORAGE_PREFIX = "tictactoe:players:";
 const SHARED_KEY_STORAGE = "tictactoe:shared-room-key";
+const PLAYER_AVATARS = ["ann", "makoto", "morgana", "ren", "ryuji", "yusuke"];
 const state = {
     key: "", 
     tile: "", 
@@ -27,6 +29,8 @@ const state = {
     outcomeId: "", 
     leaving: false,
     spectator: false,
+    profile: null,
+    players: {},
     spectatorExitSince: null,
     autoRematch: false,
     autoRematchReady: false,
@@ -96,7 +100,10 @@ async function enterRoom(intent) {
             return;
         }
 
-        if (playerTile === "X" && intent === "create") saveStoredScores(key, { X: 0, O: 0 });
+        if (playerTile === "X" && intent === "create") {
+            saveStoredScores(key, { X: 0, O: 0 });
+            savePlayerProfiles(key, {});
+        }
         beginSession(key, playerTile);
         if (playerTile === "X") {
             state.view = "waiting";
@@ -120,8 +127,11 @@ async function enterRoom(intent) {
 
 function beginSession(key, tile) {
     stopPolling();
-    Object.assign(state, { key, tile, board: [...EMPTY_BOARD], turn: "X", view: "waiting", scores: readStoredScores(key), outcomeId: "", leaving: false, spectator: false, spectatorExitSince: null, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
-    setRoom(key, tile);
+    const profile = getLobbyProfile();
+    savePlayerProfile(key, tile, profile);
+    const players = readPlayerProfiles(key);
+    Object.assign(state, { key, tile, board: [...EMPTY_BOARD], turn: "X", view: "waiting", scores: readStoredScores(key), outcomeId: "", leaving: false, spectator: false, spectatorExitSince: null, profile, players, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
+    setRoom(key, tile, false, players);
     setScores(state.scores);
     renderBoard(state.board, { ...state, spectator: false });
 }
@@ -129,8 +139,10 @@ function beginSession(key, tile) {
 function beginSpectatorSession(key, board) {
     stopPolling();
     const parsedBoard = [...board];
-    Object.assign(state, { key, tile: "", board: parsedBoard, turn: currentTurn(parsedBoard), view: "spectating", scores: readStoredScores(key), outcomeId: "", leaving: false, spectator: true, spectatorExitSince: null, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
-    setRoom(key, "", true);
+    const profile = getLobbyProfile();
+    const players = readPlayerProfiles(key);
+    Object.assign(state, { key, tile: "", board: parsedBoard, turn: currentTurn(parsedBoard), view: "spectating", scores: readStoredScores(key), outcomeId: "", leaving: false, spectator: true, spectatorExitSince: null, profile, players, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
+    setRoom(key, "", true, players);
     setScores(state.scores);
     renderBoard(parsedBoard, { ...state, spectator: true, finished: Boolean(resultFor(parsedBoard)) });
     showView("game");
@@ -305,7 +317,9 @@ async function requestRematch() {
         await gameApi.reset(state.key);
         const tile = (await gameApi.create(state.key)).toUpperCase();
         Object.assign(state, { tile, board: [...EMPTY_BOARD], turn: "X", view: "waiting", outcomeId: "", movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: true });
-        setRoom(state.key, tile);
+        savePlayerProfile(state.key, tile, state.profile);
+        state.players = readPlayerProfiles(state.key);
+        setRoom(state.key, tile, false, state.players);
         renderBoard(state.board, state);
         showView("waiting");
         elements.waitingStatus.textContent = "Rematch requested - waiting for your rival…";
@@ -338,7 +352,9 @@ async function joinRematch() {
             if (state.autoRematch) {
                 closeModal();
                 Object.assign(state, { tile: "X", board: [...EMPTY_BOARD], turn: "X", view: "waiting", outcomeId: "", leaving: false, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: true });
-                setRoom(state.key, state.tile);
+                savePlayerProfile(state.key, state.tile, state.profile);
+                state.players = readPlayerProfiles(state.key);
+                setRoom(state.key, state.tile, false, state.players);
                 renderBoard(state.board, state);
                 showView("waiting");
                 elements.waitingStatus.textContent = "Waiting for your rival…";
@@ -353,7 +369,9 @@ async function joinRematch() {
         }
         closeModal();
         Object.assign(state, { tile: "O", board: [...EMPTY_BOARD], turn: "X", view: "playing", outcomeId: "", leaving: false, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: true });
-        setRoom(state.key, state.tile);
+        savePlayerProfile(state.key, state.tile, state.profile);
+        state.players = readPlayerProfiles(state.key);
+        setRoom(state.key, state.tile, false, state.players);
         renderBoard(state.board, state);
         showView("game");
         setStatus("Opponent's turn", "waiting");
@@ -432,7 +450,7 @@ async function playCell(cell) {
 function addCheer(message) {
     const text = (message || "").trim();
     if (!text || !state.key) return;
-    const source = state.spectator ? "Spectator" : `Player ${state.tile || "X"}`;
+    const source = state.profile?.name || (state.spectator ? "Spectator" : `Player ${state.tile || "X"}`);
     const entry = { source, text, timestamp: Date.now() };
     localStorage.setItem(cheerStorageKey(state.key), JSON.stringify(entry));
     toast(`${source}: ${text}`);
@@ -465,7 +483,7 @@ async function exitGame() {
 function returnToLobby() {
     clearDrawRematchTimer();
     stopPolling();
-    Object.assign(state, { key: "", tile: "", board: [...EMPTY_BOARD], turn: "X", view: "lobby", outcomeId: "", leaving: false, spectator: false, spectatorExitSince: null, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
+    Object.assign(state, { key: "", tile: "", board: [...EMPTY_BOARD], turn: "X", view: "lobby", outcomeId: "", leaving: false, spectator: false, spectatorExitSince: null, profile: null, players: {}, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
     elements.keyInput.value = generateKey();
     setKeyError();
     showView("lobby");
@@ -514,6 +532,57 @@ function scoreStorageKey(roomKey) {
     return `${SCORE_STORAGE_PREFIX}${roomKey}`;
 }
 
+function playerStorageKey(roomKey) {
+    return `${PLAYER_STORAGE_PREFIX}${roomKey}`;
+}
+
+function getLobbyProfile() {
+    const avatar = elements.playerAvatar.value || "ren";
+    const defaultName = avatar.charAt(0).toUpperCase() + avatar.slice(1);
+    return { name: elements.playerName.value.trim().slice(0, 10) || defaultName, avatar };
+}
+
+function changeAvatar(direction) {
+    const previousAvatar = elements.playerAvatar.value;
+    const previousName = previousAvatar.charAt(0).toUpperCase() + previousAvatar.slice(1);
+    const currentIndex = PLAYER_AVATARS.indexOf(previousAvatar);
+    const avatar = PLAYER_AVATARS[(currentIndex + direction + PLAYER_AVATARS.length) % PLAYER_AVATARS.length];
+    const name = avatar.charAt(0).toUpperCase() + avatar.slice(1);
+    const usesDefaultName = !elements.playerName.value.trim() || elements.playerName.value.trim() === previousName;
+    elements.playerAvatar.value = avatar;
+    elements.avatarPreview.src = `assets/icons/${avatar}.png`;
+    elements.avatarPreview.alt = name;
+    if (usesDefaultName) elements.playerName.value = name;
+}
+
+function readPlayerProfiles(roomKey) {
+    try {
+        const players = JSON.parse(localStorage.getItem(playerStorageKey(roomKey))) || {};
+        return Object.fromEntries(["X", "O"].flatMap((tile) => {
+            const player = players[tile];
+            if (typeof player?.name !== "string" || !PLAYER_AVATARS.includes(player.avatar)) return [];
+            return [[tile, { name: player.name.slice(0, 10), avatar: player.avatar }]];
+        }));
+    } catch {
+        return {};
+    }
+}
+
+function savePlayerProfiles(roomKey, players) {
+    try { localStorage.setItem(playerStorageKey(roomKey), JSON.stringify(players)); } catch {}
+}
+
+function savePlayerProfile(roomKey, tile, profile) {
+    if (!roomKey || !tile || !profile) return;
+    savePlayerProfiles(roomKey, { ...readPlayerProfiles(roomKey), [tile]: profile });
+}
+
+function hydratePlayerProfiles(event) {
+    if (!state.key || event.key !== playerStorageKey(state.key)) return;
+    state.players = readPlayerProfiles(state.key);
+    setRoom(state.key, state.tile, state.spectator, state.players);
+}
+
 function readStoredScores(roomKey) {
     try {
         const scores = JSON.parse(localStorage.getItem(scoreStorageKey(roomKey)));
@@ -541,6 +610,8 @@ elements.lobbyForm.addEventListener("submit", (event) => { event.preventDefault(
 elements.generateKey.addEventListener("click", () => { elements.keyInput.value = generateKey(); setKeyError(); });
 elements.copyLobbyKey.addEventListener("click", copyLobbyKey);
 elements.keyInput.addEventListener("input", () => setKeyError());
+elements.previousAvatar.addEventListener("click", () => changeAvatar(-1));
+elements.nextAvatar.addEventListener("click", () => changeAvatar(1));
 elements.join.addEventListener("click", () => enterRoom("join"));
 
 elements.cancelWaiting.addEventListener("click", exitGame);
@@ -559,6 +630,7 @@ window.addEventListener("pagehide", () => {
 window.addEventListener("storage", hydrateCheerFromStorage);
 window.addEventListener("storage", hydrateScoresFromStorage);
 window.addEventListener("storage", hydrateSharedKey);
+window.addEventListener("storage", hydratePlayerProfiles);
 
 elements.keyInput.value = generateKey();
 showView("lobby");

@@ -119,6 +119,8 @@
   color: #ff8f89;
 }
 .icon-button {
+  display: grid;
+  place-items: center;
   width: 55px;
   flex: 0 0 55px;
   border: 0;
@@ -150,6 +152,84 @@
 }
 .field-hint.error {
   color: #ff817a;
+}
+.identity-fields {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.avatar-picker {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 150px;
+}
+.identity-controls {
+  display: grid;
+  min-width: 0;
+}
+.identity-controls > input {
+  width: 100%;
+  border: 1px solid var(--line);
+  padding: 11px 12px;
+  color: var(--ink);
+  background: rgba(0, 0, 0, 0.22);
+}
+.name-hint {
+  min-height: 0;
+  margin: 6px 0 0;
+}
+.avatar-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 106px;
+  height: 106px;
+}
+.avatar-stage::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  background: var(--red);
+  clip-path: polygon(8% 3%, 96% 0, 100% 91%, 3% 100%);
+  transform: rotate(-4deg);
+  box-shadow: 6px 6px 0 var(--red-dark);
+}
+.avatar-stage::after {
+  content: "";
+  position: absolute;
+  inset: 11px;
+  background: #0a0b10;
+  clip-path: polygon(3% 5%, 100% 2%, 94% 100%, 0 93%);
+}
+.avatar-stage img {
+  position: relative;
+  z-index: 1;
+  width: 94px;
+  height: 94px;
+  object-fit: contain;
+}
+.avatar-step {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 34px;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  background: rgba(255, 255, 255, .04);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+.avatar-step-previous { left: 3px; }
+.avatar-step-next { right: 3px; }
+.avatar-step:hover {
+  border-color: var(--red);
+  background: rgba(255, 59, 48, .12);
 }
 .lobby-actions {
   display: grid;
