@@ -39,10 +39,10 @@
                 </div>
                 <label for="gameKey">Game key</label>
                 <div class="key-field">
-                    <input id="gameKey" name="gameKey" type="text" maxlength="32" autocomplete="off" spellcheck="false" placeholder="e.g. HANNAH">
+                    <input id="gameKey" name="gameKey" type="text" minlength="4" maxlength="6" autocomplete="off" spellcheck="false" placeholder="e.g. HANNAH" pattern="[A-Za-z0-9]{4,6}" required>
                     <button id="generateKeyButton" class="icon-button" type="button" aria-label="Generate a new key" title="Generate key">↻</button>
                 </div>
-                <p id="keyHint" class="field-hint">For custom keys, use 3-6 alphanumeric characters (letters and numbers only)</p>
+                <p id="keyHint" class="field-hint">For custom keys, use 4-6 alphanumeric characters (letters and numbers only)</p>
                 <div class="lobby-actions">
                     <button id="createButton" class="button button-primary" type="submit">Create game <span>→</span></button>
                     <button id="joinButton" class="button button-secondary" type="button">Join with key</button>

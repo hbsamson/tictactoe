@@ -9,7 +9,7 @@ import { closeModal,
     toast } from "./ui.js";
 
 const POLL_DELAY = 800;
-const KEY_PATTERN = /^[a-zA-Z0-9]{3,6}$/;
+const KEY_PATTERN = /^[a-z0-9]{4,6}$/i;
 const CHEER_STORAGE_PREFIX = "tictactoe:cheers:";
 const state = {
     key: "", 
@@ -27,14 +27,7 @@ const state = {
 };
 
 function generateKey() {
-    const validKeyChars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // easily confused characters 1, I, O, 0 removed to prevent human errors when sharing keys
-    const bytes = new Uint8Array(6); // container for random int 0 to 255
-    crypto.getRandomValues(bytes); 
-    let key = "";
-    for (const byte of bytes) {
-        key += validKeyChars[byte % validKeyChars.length];
-    }
-    return key;
+    return crypto.randomUUID().slice(0, 6).toUpperCase();
 }
 
 function validateKey(key) {

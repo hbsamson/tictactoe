@@ -73,7 +73,7 @@ export function setOffline() {
 
 export function setKeyError(message = "") {
     elements.keyInput.setAttribute("aria-invalid", String(Boolean(message)));
-    elements.keyHint.textContent = message || "Use 3-6 alphanumeric characters (letters and numbers only)";
+    elements.keyHint.textContent = message || "Use 4-6 alphanumeric characters (letters and numbers only)";
     elements.keyHint.classList.toggle("error", Boolean(message));
 }
 
