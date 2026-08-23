@@ -57,12 +57,26 @@
   place-items: center;
   width: 76px;
   height: 76px;
-  margin-bottom: 28px;
+  margin: 0;
   color: var(--ink);
   background: var(--red);
   box-shadow: 7px 7px 0 var(--red-dark);
   font-size: 31px;
   font-weight: 950;
+}
+.modal-heading {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  align-items: center;
+  gap: 22px;
+  margin-bottom: 24px;
+  padding-right: 28px;
+}
+.modal-heading-copy {
+  min-width: 0;
+}
+.modal-heading-copy .eyebrow {
+  margin-bottom: 8px;
 }
 .modal h2 {
   margin: 0;
@@ -74,7 +88,57 @@
   color: var(--muted);
   line-height: 1.6;
 }
+.modal-instructions {
+  width: min(590px, 100%);
+}
+.modal-instructions > p:not(.eyebrow) {
+  margin-bottom: 16px;
+}
+.modal-details {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 24px;
+  padding: 0;
+  list-style: none;
+  counter-reset: instructions;
+}
+.modal-details li {
+  position: relative;
+  counter-increment: instructions;
+  border-left: 3px solid var(--red);
+  padding: 10px 12px 10px 44px;
+  color: #d3d4da;
+  background: rgba(255, 255, 255, .045);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.modal-details li::before {
+  content: counter(instructions, decimal-leading-zero);
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  color: var(--red);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
 .modal-actions {
   display: grid;
   gap: 11px;
+}
+@media (max-width: 600px), (max-height: 680px) {
+  .modal { padding: 24px; }
+  .modal-heading {
+    grid-template-columns: 58px minmax(0, 1fr);
+    gap: 15px;
+    margin-bottom: 16px;
+  }
+  .modal-symbol {
+    width: 58px;
+    height: 58px;
+    font-size: 24px;
+  }
+  .modal-details { gap: 6px; margin-bottom: 16px; }
+  .modal-details li { padding-block: 7px; font-size: 11px; }
+  .modal-details li::before { top: 7px; }
 }

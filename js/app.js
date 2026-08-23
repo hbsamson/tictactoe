@@ -537,7 +537,13 @@ function showHowToPlay() {
         eyebrow: "How to play",
         symbol: "XO",
         title: "Match three to win",
-        message: "Create a room and share its key, or join with a key from another player. X moves first. Take turns placing tiles (X or O); the first player to connect three horizontally, vertically, or diagonally wins. A full board without three in a row is a draw. Rematch with the same rival, or leave the room to start a new game. Spectators can join by using the game key of an existing game, they can watch live matches and send messages but cannot play.",
+        message: "Create or join a room, then take turns claiming the grid.",
+        details: [
+            "Create a room and share its six-character key, or join using a key from another player.",
+            "X moves first. Select one empty cell when the turn indicator says it is your turn.",
+            "Connect three tiles horizontally, vertically, or diagonally to win. A full board is a draw.",
+            "Spectators use the same room key to watch and send reactions, but cannot place tiles."
+        ],
         primaryLabel: "Got it",
         onPrimary: closeModal
     });

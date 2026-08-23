@@ -8,7 +8,7 @@ const views = {
 const cells = [...document.querySelectorAll(".cell")];
 const modal = {
     overlay: byId("modalOverlay"), eyebrow: byId("modalEyebrow"), symbol: byId("modalSymbol"),
-    title: byId("modalTitle"), message: byId("modalMessage"), primary: byId("modalPrimaryButton"),
+    title: byId("modalTitle"), message: byId("modalMessage"), details: byId("modalDetails"), primary: byId("modalPrimaryButton"),
     secondary: byId("modalSecondaryButton"), close: byId("modalCloseButton")
 };
 let modalHandlers = {};
@@ -139,6 +139,14 @@ export function showModal(options) {
     modal.symbol.textContent = options.symbol || "XO";
     modal.title.textContent = options.title;
     modal.message.textContent = options.message;
+    modal.details.replaceChildren();
+    (options.details || []).forEach((detail) => {
+        const item = document.createElement("li");
+        item.textContent = detail;
+        modal.details.appendChild(item);
+    });
+    modal.details.hidden = !options.details?.length;
+    modal.details.closest(".modal").classList.toggle("modal-instructions", Boolean(options.details?.length));
     modal.primary.textContent = options.primaryLabel || "Continue";
     modal.secondary.textContent = options.secondaryLabel || "Back";
     modal.secondary.hidden = !options.onSecondary;
@@ -165,6 +173,12 @@ modal.primary.addEventListener("click", () => modalHandlers.onPrimary?.());
 modal.secondary.addEventListener("click", () => modalHandlers.onSecondary?.());
 modal.close.addEventListener("click", () => {
     if (modalHandlers.dismissible !== false) {
+        modalHandlers.onDismiss?.();
+        closeModal();
+    }
+});
+modal.overlay.addEventListener("click", (event) => {
+    if (event.target === modal.overlay && modalHandlers.dismissible !== false) {
         modalHandlers.onDismiss?.();
         closeModal();
     }
