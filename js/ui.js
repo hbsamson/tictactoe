@@ -70,6 +70,11 @@ export function setOffline() {
     byId("connectionStatus").dataset.state = "offline";
 }
 
+export function setOnline() {
+    byId("connectionStatus").textContent = "Server ready";
+    byId("connectionStatus").dataset.state = "ready";
+}
+
 export function setKeyError(message = "") {
     elements.keyInput.setAttribute("aria-invalid", String(Boolean(message)));
     elements.keyHint.textContent = message || "Use 4-6 alphanumeric characters (letters and numbers only)";

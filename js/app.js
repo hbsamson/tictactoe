@@ -3,11 +3,12 @@ import { BOARD_PENDING, GAME_EXITED, EMPTY_BOARD, currentTurn, parseBoard, resul
 import { closeModal, 
     elements, 
     renderBoard,
-    setBusy, setKeyError, setOffline, setRoom, setScores, setStatus, 
+    setBusy, setKeyError, setOffline, setOnline, setRoom, setScores, setStatus, 
     playGameStart, setModalMessage, showModal, showView,
     toast } from "./ui.js";
 
 const POLL_DELAY = 800;
+const CONNECTION_POLL_DELAY = 5000;
 const KEY_PATTERN = /^[a-z0-9]{4,6}$/i;
 const CHEER_STORAGE_PREFIX = "tictactoe:cheers:";
 const SCORE_STORAGE_PREFIX = "tictactoe:scores:";
@@ -30,6 +31,21 @@ const state = {
     skipGameStart: false
 };
 let drawRematchTimer = null;
+let connectionPollTimer = null;
+
+async function pollConnectionStatus() {
+    window.clearTimeout(connectionPollTimer);
+    const enteredKey = elements.keyInput.value.trim();
+    const probeKey = state.key || (KEY_PATTERN.test(enteredKey) ? enteredKey : generateKey());
+    try {
+        await gameApi.check(probeKey);
+        setOnline();
+    } catch {
+        setOffline();
+    } finally {
+        connectionPollTimer = window.setTimeout(pollConnectionStatus, CONNECTION_POLL_DELAY);
+    }
+}
 
 function generateKey() {
     return crypto.randomUUID().slice(0, 6).toUpperCase();
@@ -486,3 +502,4 @@ window.addEventListener("storage", hydrateScoresFromStorage);
 
 elements.keyInput.value = generateKey();
 showView("lobby");
+pollConnectionStatus();
