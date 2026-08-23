@@ -17,7 +17,7 @@ let gameStartTimer;
 
 export const elements = {
     lobbyForm: byId("lobbyForm"), keyInput: byId("gameKey"), keyHint: byId("keyHint"),
-    playerName: byId("playerName"), playerAvatar: byId("playerAvatar"), avatarPreview: byId("playerAvatarPreview"), previousAvatar: byId("previousAvatarButton"), nextAvatar: byId("nextAvatarButton"),
+    playerName: byId("playerName"), playerAvatar: byId("playerAvatar"), avatarPreview: byId("playerAvatarPreview"), previousAvatar: byId("previousAvatarButton"), nextAvatar: byId("nextAvatarButton"), howToPlay: byId("howToPlayButton"),
     generateKey: byId("generateKeyButton"), copyLobbyKey: byId("copyLobbyKeyButton"), create: byId("createButton"), join: byId("joinButton"),
     waitingKey: byId("waitingKey"), waitingStatus: byId("waitingStatus"),
     copyWaitingKey: byId("copyWaitingKey"), cancelWaiting: byId("cancelWaitingButton"),
@@ -90,8 +90,9 @@ export function setKeyError(message = "") {
 export function setRoom(key, tile, spectator = false, players = {}) {
     elements.waitingKey.textContent = key;
     elements.activeGameKey.textContent = key;
-    byId("playerTile").textContent = spectator ? "Viewer" : tile || "—";
-    byId("playerTileMobile").textContent = spectator ? "Viewer" : tile || "—";
+    byId("gameModeLabel").textContent = spectator ? "Watching live" : "Live match";
+    byId("spectatorBadge").hidden = !spectator;
+    views.game.classList.toggle("is-spectator", spectator);
     setPlayer("X", players.X, spectator ? "Player X" : tile === "X" ? "You" : "Opponent");
     setPlayer("O", players.O, spectator ? "Player O" : tile === "O" ? "You" : "Opponent");
 }
@@ -100,7 +101,7 @@ function setPlayer(tile, player, fallbackName) {
     byId(`player${tile}Label`).textContent = player?.name || fallbackName;
     const avatar = byId(`player${tile}Avatar`);
     avatar.hidden = !player?.avatar;
-    if (player?.avatar) avatar.src = `assets/icons/${player.avatar}${player.avatar === "ryuji" ? "-icon" : ""}.png`;
+    if (player?.avatar) avatar.src = `assets/icons/${player.avatar}.png`;
     else avatar.removeAttribute("src");
     avatar.alt = player?.name ? `${player.name}'s icon` : "";
 }
@@ -117,7 +118,9 @@ export function renderBoard(board, { tile, turn, finished = false, winningLine =
     });
     byId("playerXCard").classList.toggle("active", turn === "X" && !finished && !spectator);
     byId("playerOCard").classList.toggle("active", turn === "O" && !finished && !spectator);
+    byId("turnStatus").dataset.tile = turn;
     elements.board.classList.toggle("is-disabled", !isInteractive && !finished);
+    elements.board.dataset.activeTile = isInteractive ? tile : "";
     elements.board.setAttribute("aria-busy", String(movePending));
 }
 

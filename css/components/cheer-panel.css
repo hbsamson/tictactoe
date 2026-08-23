@@ -1,8 +1,14 @@
 .cheer-panel {
+  display: none;
   margin-top: 18px;
   padding: 18px 16px 14px;
   border: 1px solid var(--line);
   background: rgba(11, 13, 19, 0.85);
+}
+.game.is-spectator .cheer-panel {
+  display: block;
+  border-color: rgba(255, 255, 255, .24);
+  background: rgba(8, 10, 16, .96);
 }
 .cheer-header {
   display: grid;
@@ -31,4 +37,15 @@
 .cheer-button:hover {
   border-color: rgba(103, 213, 255, 0.6);
   background: rgba(103, 213, 255, 0.08);
+}
+.game.is-spectator .cheer-button {
+  min-height: 40px;
+  border-color: rgba(255, 255, 255, .3);
+  padding: 9px 13px;
+  background: rgba(255, 255, 255, .08);
+  font-size: 12px;
+}
+.game.is-spectator .cheer-button:hover {
+  border-color: var(--red);
+  background: rgba(255, 59, 48, .16);
 }

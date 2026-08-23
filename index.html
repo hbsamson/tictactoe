@@ -29,6 +29,7 @@
                     <span><b>01</b> Create a local room</span>
                     <span><b>02</b> Share the key</span>
                     <span><b>03</b> Take the grid</span>
+                    <button id="howToPlayButton" class="how-to-trigger" type="button" aria-label="Open detailed instructions"><i data-lucide="circle-help"></i><span>How?</span></button>
                 </div>
             </div>
 
@@ -37,7 +38,7 @@
                     <div><p class="eyebrow">Local match</p><h2>Start the showdown</h2></div>
                     <span class="mini-grid" aria-hidden="true">×○<br>○×</span>
                 </div>
-                <label for="gameKey">Game key</label>
+                <label for="gameKey">Game key <span class="required-mark" aria-hidden="true">*</span></label>
                 <div class="key-field">
                     <input id="gameKey" name="gameKey" type="text" minlength="4" maxlength="6" autocomplete="off" spellcheck="false" placeholder="e.g. HANNAH" pattern="[A-Za-z0-9]{4,6}" required>
                     <button id="generateKeyButton" class="icon-button" type="button" aria-label="Generate a new key" title="Generate key"><i data-lucide="refresh-cw">↻</i></button>
@@ -76,9 +77,9 @@
             </div>
         </section>
 
-        <section id="gameView" class="game view" hidden aria-labelledby="gameHeading">
+        <section id="gameView" class="game view" hidden aria-label="Tic-Tac-Toe match">
             <div class="game-topbar">
-                <div><p class="eyebrow">Live match</p><h1 id="gameHeading">The grid awaits</h1></div>
+                <div class="match-mode"><strong id="gameModeLabel" class="game-mode-label">Live match</strong><span id="spectatorBadge" class="spectator-badge" hidden>Spectator · reactions only</span></div>
                 <div class="room-actions">
                     <button id="copyGameKey" class="room-key" type="button" aria-label="Copy game key">Room <strong id="activeGameKey"></strong><small><i data-lucide="copy"></i> Copy</small></button>
                     <button id="exitButton" class="button button-ghost" type="button"><i data-lucide="log-out"></i> Exit</button>
@@ -88,17 +89,16 @@
             <div class="game-layout">
                 <div class="scoreboard" aria-label="Scoreboard">
                 <aside class="player-card player-x" id="playerXCard">
-                        <span class="player-symbol"><img id="playerXAvatar" alt=""><span>X</span></span><div><small>Player one</small><strong id="playerXLabel">Opponent</strong></div><b id="xScore" class="score">0</b>
+                        <span class="player-symbol"><img id="playerXAvatar" alt=""><span>X</span></span><div><small>Player X</small><strong id="playerXLabel">Opponent</strong></div><b id="xScore" class="score">0</b>
                 </aside>
-                <span class="score-divider" aria-hidden="true">-</span>
+                <span class="score-divider" aria-hidden="true">VS</span>
                 <aside class="player-card player-o" id="playerOCard">
-                        <span class="player-symbol"><img id="playerOAvatar" alt=""><span>O</span></span><div><small>Player two</small><strong id="playerOLabel">Opponent</strong></div><b id="oScore" class="score">0</b>
+                        <span class="player-symbol"><img id="playerOAvatar" alt=""><span>O</span></span><div><small>Player O</small><strong id="playerOLabel">Opponent</strong></div><b id="oScore" class="score">0</b>
                 </aside>
                 </div>
                 <div class="board-column">
                     <div id="turnStatus" class="turn-status" role="status" aria-live="polite">
                         <span class="turn-message"><span class="turn-dot"></span><strong id="statusText">Preparing match…</strong></span>
-                        <span class="you-are-mobile">You are <strong id="playerTileMobile">—</strong></span>
                     </div>
                     <div id="board" class="board" role="grid" aria-label="Tic-Tac-Toe board">
                         <button class="cell" type="button" role="gridcell" data-index="0" data-x="0" data-y="0" data-label="Top left" aria-label="Top left, empty" disabled></button>
@@ -111,15 +111,14 @@
                         <button class="cell" type="button" role="gridcell" data-index="7" data-x="1" data-y="2" data-label="Bottom center" aria-label="Bottom center, empty" disabled></button>
                         <button class="cell" type="button" role="gridcell" data-index="8" data-x="2" data-y="2" data-label="Bottom right" aria-label="Bottom right, empty" disabled></button>
                     </div>
-                    <p class="you-are">You are <strong id="playerTile">—</strong></p>
                     <div class="cheer-panel" aria-live="polite">
                         <div class="cheer-header">
                             <p class="eyebrow">Cheer squad</p>
                             <div class="cheer-buttons" aria-label="Pre-written encouragements">
+                                <button class="cheer-button" type="button" data-message="Woah!">Woah!</button>
                                 <button class="cheer-button" type="button" data-message="Nice move!">Nice move!</button>
-                                <button class="cheer-button" type="button" data-message="You got this!">You got this!</button>
-                                <button class="cheer-button" type="button" data-message="Defense!">Defense!</button>
                                 <button class="cheer-button" type="button" data-message="Clutch play!">Clutch play!</button>
+                                <button class="cheer-button" type="button" data-message="Ouch!">Ouch!</button>
                             </div>
                         </div>
                     </div>

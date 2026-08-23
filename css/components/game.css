@@ -8,6 +8,31 @@
   gap: 25px;
   margin-bottom: 36px;
 }
+.game-mode-label {
+  color: var(--red);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.match-mode {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.spectator-badge {
+  border: 1px solid rgba(255, 59, 48, .55);
+  padding: 5px 8px;
+  color: #ff8a84;
+  background: rgba(255, 59, 48, .1);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+.scoreboard {
+  justify-self: center;
+  margin-inline: auto;
+}
 .game-topbar h1 {
   margin: 0;
   font-size: clamp(30px, 5vw, 56px);
@@ -49,6 +74,8 @@
   border-color: rgba(255, 255, 255, 0.35);
   transform: translateY(-4px);
 }
+.player-x.active { border-color: rgba(103, 213, 255, 0.75); }
+.player-o.active { border-color: rgba(255, 59, 48, 0.75); }
 .player-symbol {
   display: grid;
   place-items: center;
@@ -62,8 +89,8 @@
   background: var(--blue);
 }
 .player-o .player-symbol {
-  color: #1a0d00;
-  background: var(--yellow);
+  color: #fff;
+  background: var(--red);
   border-radius: 50%;
 }
 .player-card small {
@@ -107,6 +134,7 @@
   color: #c7c8ce;
   font-size: 12px;
   letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 .turn-dot {
   width: 7px;
@@ -114,9 +142,13 @@
   border-radius: 50%;
   background: #777;
 }
-.turn-status[data-state="your-turn"] .turn-dot {
-  background: #55d98a;
-  box-shadow: 0 0 10px #55d98a;
+.turn-status[data-state="your-turn"][data-tile="X"] .turn-dot {
+  background: var(--blue);
+  box-shadow: 0 0 10px var(--blue);
+}
+.turn-status[data-state="your-turn"][data-tile="O"] .turn-dot {
+  background: var(--red);
+  box-shadow: 0 0 10px var(--red);
 }
 .turn-status[data-state="finished"] .turn-dot {
   background: var(--red);
@@ -124,14 +156,20 @@
 .turn-status[data-state="offline"] .turn-dot {
   background: var(--yellow);
 }
+.game.is-spectator .turn-status {
+  display: none;
+}
+.game.is-spectator .player-card {
+  opacity: 1;
+}
 .board {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   width: 100%;
   padding: 11px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(7, 8, 13, 0.82);
+  border: 2px solid rgba(255, 255, 255, 0.34);
+  background: rgba(7, 8, 13, 0.94);
   box-shadow: var(--shadow);
   transform: rotate(-0.35deg);
 }
@@ -141,8 +179,8 @@
   place-items: center;
   aspect-ratio: 1;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.11);
-  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(12, 14, 21, 0.82);
   cursor: pointer;
   font-size: clamp(48px, 8vw, 84px);
   font-weight: 950;
@@ -152,10 +190,16 @@
     transform 0.15s,
     border-color 0.15s;
 }
-.cell:not(:disabled):hover {
+.board[data-active-tile="X"] .cell:not(:disabled):hover {
   z-index: 1;
   border-color: rgba(103, 213, 255, 0.7);
   background: rgba(103, 213, 255, 0.1);
+  transform: scale(1.035);
+}
+.board[data-active-tile="O"] .cell:not(:disabled):hover {
+  z-index: 1;
+  border-color: rgba(255, 59, 48, 0.85);
+  background: rgba(255, 59, 48, 0.14);
   transform: scale(1.035);
 }
 .player-symbol img {
@@ -170,8 +214,8 @@
   cursor: not-allowed;
 }
 .board.is-disabled .cell:disabled:hover {
-  border-color: rgba(255, 255, 255, 0.11);
-  background: rgba(255, 255, 255, 0.045);
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(12, 14, 21, 0.82);
   transform: none;
 }
 .cell:disabled {
@@ -182,8 +226,8 @@
   text-shadow: 4px 4px 0 rgba(24, 97, 130, 0.55);
 }
 .cell[data-value="O"] {
-  color: var(--yellow);
-  text-shadow: 4px 4px 0 rgba(130, 84, 14, 0.55);
+  color: var(--red);
+  text-shadow: 4px 4px 0 rgba(130, 20, 20, 0.55);
 }
 .cell.winning {
   border-color: var(--red);

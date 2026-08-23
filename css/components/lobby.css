@@ -48,6 +48,52 @@
   color: var(--red);
   font-size: 10px;
 }
+.how-to-trigger {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  color: var(--red);
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 950;
+}
+.how-to-trigger::before { content: "?"; }
+.how-to-trigger svg,
+.how-to-trigger span { display: none; }
+.how-to-trigger:hover {
+  color: #fff;
+  background: rgba(255, 59, 48, .18);
+}
+@media (min-width: 901px) {
+  .how-to-trigger {
+    display: inline-flex;
+    width: auto;
+    height: auto;
+    gap: 7px;
+    border: 1px solid var(--line);
+    padding: 7px 10px;
+    color: var(--ink);
+    background: rgba(255, 255, 255, .04);
+    font-size: 11px;
+    font-weight: 850;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .how-to-trigger::before { content: none; }
+  .how-to-trigger svg,
+  .how-to-trigger span { display: block; }
+  .how-to-trigger svg { width: 17px; height: 17px; }
+  .how-to-trigger:hover {
+    border-color: var(--red);
+    background: rgba(255, 59, 48, .18);
+  }
+}
+.required-mark { color: var(--red); }
 
 .lobby-card {
   padding: clamp(28px, 4vw, 46px);

@@ -109,7 +109,7 @@
   margin-inline: auto;
 }
 .turn-status {
-  justify-content: space-between;
+  justify-content: center;
   min-height: 34px;
   margin-bottom: 5px;
   padding: 0 10px;
@@ -131,6 +131,11 @@
 .cheer-panel { margin-top: 6px; padding: 7px; }
 .cheer-header { gap: 5px; }
 .cheer-header .eyebrow { display: none; }
+.game.is-spectator .cheer-header {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+}
+.game.is-spectator .cheer-header .eyebrow { display: block; }
 .cheer-buttons {
   flex-wrap: nowrap;
   justify-content: center;
@@ -262,6 +267,55 @@
   .cheer-header .eyebrow { display: block; }
   .cheer-buttons { flex-wrap: wrap; justify-content: normal; gap: 8px; }
   .cheer-button { min-height: 36px; padding: 8px 10px; font-size: 11px; }
+
+  /* Compact game screen. */
+  .game { padding: 18px 0; }
+  .game-topbar { margin-bottom: 12px; }
+  .room-key,
+  .button-ghost { min-height: 38px; padding: 8px 12px; }
+  .game-layout {
+    grid-template-columns: minmax(300px, 520px);
+    grid-template-rows: auto auto;
+    width: min(520px, 100%);
+    gap: 10px;
+  }
+  .scoreboard {
+    grid-column: 1;
+    grid-row: 1;
+    display: flex;
+    width: 100%;
+  }
+  .score-divider { display: block; }
+  .scoreboard .player-card {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    flex: 1;
+    gap: 9px;
+    padding: 10px 12px;
+    border: 0;
+    background: transparent;
+  }
+  .player-symbol { width: 36px; height: 36px; font-size: 21px; }
+  .score {
+    grid-column: auto;
+    padding: 0;
+    border: 0;
+    font-size: 27px;
+  }
+  .score::before { display: none; }
+  .board-column {
+    grid-column: 1;
+    grid-row: 2;
+    width: 100%;
+  }
+  .you-are { display: none; }
+  .cheer-panel { margin-top: 10px; padding: 10px; }
+  .cheer-header {
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+  .cheer-header .eyebrow { margin: 0; }
+  .cheer-buttons { flex-wrap: nowrap; }
 }
 
 /* Extra compaction for short landscape screens. */

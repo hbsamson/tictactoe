@@ -114,7 +114,7 @@ async function enterRoom(intent) {
             state.view = "playing";
             showView("game");
             playGameStart(state.tile);
-            setStatus("X takes the first move", "waiting");
+            setStatus("X turn — waiting", "waiting");
             schedulePoll(0);
             if (intent === "create") toast("That key existed, so you joined as O.");
         }
@@ -174,7 +174,7 @@ async function pollServer() {
                 showView("game");
                 if (!state.skipGameStart) playGameStart(state.tile);
                 state.skipGameStart = false;
-                setStatus(state.tile === "X" ? "Your turn" : "Opponent's turn", state.tile === "X" ? "your-turn" : "waiting");
+                setStatus(state.tile === "X" ? "Your turn — place X" : "X turn — waiting", state.tile === "X" ? "your-turn" : "waiting");
                 toast("Player two joined. Game on!");
             }
         }
@@ -236,7 +236,7 @@ async function refreshBoard() {
     }
 
     const isMyTurn = state.turn === state.tile;
-    setStatus(isMyTurn ? "Your turn" : "Opponent is thinking…", isMyTurn ? "your-turn" : "waiting");
+    setStatus(isMyTurn ? `Your turn — place ${state.tile}` : `${state.turn} turn — waiting`, isMyTurn ? "your-turn" : "waiting");
 
     state.view = state.spectator ? "spectating" : "playing";
     if (state.spectator) {
@@ -374,7 +374,7 @@ async function joinRematch() {
         setRoom(state.key, state.tile, false, state.players);
         renderBoard(state.board, state);
         showView("game");
-        setStatus("Opponent's turn", "waiting");
+        setStatus("X turn — waiting", "waiting");
         schedulePoll(0);
     } catch (error) {
         handleError(error, "The rematch could not be joined.");
@@ -532,6 +532,17 @@ function scoreStorageKey(roomKey) {
     return `${SCORE_STORAGE_PREFIX}${roomKey}`;
 }
 
+function showHowToPlay() {
+    showModal({
+        eyebrow: "How to play",
+        symbol: "XO",
+        title: "Match three to win",
+        message: "Create a room and share its key, or join with a key from another player. X moves first. Take turns placing tiles (X or O); the first player to connect three horizontally, vertically, or diagonally wins. A full board without three in a row is a draw. Rematch with the same rival, or leave the room to start a new game. Spectators can join by using the game key of an existing game, they can watch live matches and send messages but cannot play.",
+        primaryLabel: "Got it",
+        onPrimary: closeModal
+    });
+}
+
 function playerStorageKey(roomKey) {
     return `${PLAYER_STORAGE_PREFIX}${roomKey}`;
 }
@@ -607,6 +618,7 @@ function hydrateScoresFromStorage(event) {
 }
 
 elements.lobbyForm.addEventListener("submit", (event) => { event.preventDefault(); enterRoom("create"); });
+elements.howToPlay.addEventListener("click", showHowToPlay);
 elements.generateKey.addEventListener("click", () => { elements.keyInput.value = generateKey(); setKeyError(); });
 elements.copyLobbyKey.addEventListener("click", copyLobbyKey);
 elements.keyInput.addEventListener("input", () => setKeyError());
