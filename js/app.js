@@ -181,21 +181,10 @@ async function pollServer() {
 
 async function refreshBoard() {
     const boardInfo = await gameApi.board(state.key);
-    if (boardInfo === BOARD_PENDING || boardInfo === GAME_EXITED) {
+    if (boardInfo === BOARD_PENDING) {
+        state.spectatorExitSince = null;
         if (state.view === "spectating") {
-            if (boardInfo === BOARD_PENDING) {
-                state.spectatorExitSince = null;
-                setStatus("Waiting for the rematch…", "waiting");
-                return;
-            }
-            if (state.outcomeId && !state.spectatorExitSince) {
-                state.spectatorExitSince = Date.now();
-                setStatus("Waiting for the players…", "waiting");
-                return;
-            }
-            if (state.spectatorExitSince && Date.now() - state.spectatorExitSince < 3000) return;
-            stopPolling();
-            showModal({ eyebrow: "Room closed", symbol: "—", title: "This match is no longer live", message: "A player has left the room. Head back to the lobby and choose another key.", primaryLabel: "Back to lobby", dismissible: false, onPrimary: () => { closeModal(); returnToLobby(); } });
+            setStatus("Waiting for the rematch…", "waiting");
             return;
         }
         if (state.view === "finished") {
@@ -206,6 +195,18 @@ async function refreshBoard() {
             } else showGameEndModal();
         }
         else if (state.view === "playing") showOpponentLeftPrompt();
+        return;
+    }
+    if (boardInfo === GAME_EXITED) {
+        if ((state.view === "spectating" || state.view === "finished") && state.outcomeId) {
+            if (!state.spectatorExitSince) {
+                state.spectatorExitSince = Date.now();
+                setStatus("Checking room status…", "waiting");
+                return;
+            }
+            if (Date.now() - state.spectatorExitSince < 3000) return;
+        }
+        disconnectFromClosedRoom();
         return;
     }
     const board = parseBoard(boardInfo);
@@ -363,11 +364,15 @@ async function joinRematch() {
 }
 
 function showOpponentLeftPrompt() {
+    disconnectFromClosedRoom();
+}
+
+function disconnectFromClosedRoom() {
     if (state.leaving) return;
-    stopPolling();
     state.leaving = true;
-    renderBoard(state.board, { ...state, finished: true });
-    showModal({ eyebrow: "Session ended", symbol: "—", title: "Your opponent left", message: "This room has closed. Return to the lobby to start another match.", primaryLabel: "Back to lobby", dismissible: false, onPrimary: () => { closeModal(); returnToLobby(); } });
+    closeModal();
+    returnToLobby();
+    toast("A player left. The room was closed.");
 }
 
 async function playCell(cell) {
