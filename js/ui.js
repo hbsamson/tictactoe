@@ -85,8 +85,8 @@ export function setRoom(key, tile, spectator = false) {
     byId("playerOLabel").textContent = spectator ? "Player O" : tile === "O" ? "You" : "Opponent";
 }
 
-export function renderBoard(board, { tile, turn, finished = false, winningLine = [], spectator = false }) {
-    const isInteractive = !spectator && tile === turn && !finished;
+export function renderBoard(board, { tile, turn, finished = false, winningLine = [], spectator = false, movePending = false }) {
+    const isInteractive = !spectator && tile === turn && !finished && !movePending;
     cells.forEach((cell, index) => {
         const value = board[index];
         cell.textContent = value;
@@ -97,6 +97,8 @@ export function renderBoard(board, { tile, turn, finished = false, winningLine =
     });
     byId("playerXCard").classList.toggle("active", turn === "X" && !finished && !spectator);
     byId("playerOCard").classList.toggle("active", turn === "O" && !finished && !spectator);
+    elements.board.classList.toggle("is-disabled", !isInteractive && !finished);
+    elements.board.setAttribute("aria-busy", String(movePending));
 }
 
 export function setStatus(message, state = "waiting") {

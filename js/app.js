@@ -19,6 +19,8 @@ const state = {
     scores: { X: 0, O: 0 }, 
     pollTimer: null, 
     isLoading: false, 
+    movePending: false,
+    pendingIndex: null,
     outcomeId: "", 
     leaving: false,
     spectator: false
@@ -94,7 +96,7 @@ async function enterRoom(intent) {
 
 function beginSession(key, tile) {
     stopPolling();
-    Object.assign(state, { key, tile, board: [...EMPTY_BOARD], turn: "X", view: "waiting", scores: { X: 0, O: 0 }, outcomeId: "", leaving: false, spectator: false });
+    Object.assign(state, { key, tile, board: [...EMPTY_BOARD], turn: "X", view: "waiting", scores: { X: 0, O: 0 }, outcomeId: "", leaving: false, spectator: false, movePending: false, pendingIndex: null });
     setRoom(key, tile);
     setScores(state.scores);
     renderBoard(state.board, { ...state, spectator: false });
@@ -103,7 +105,7 @@ function beginSession(key, tile) {
 function beginSpectatorSession(key, board) {
     stopPolling();
     const parsedBoard = [...board];
-    Object.assign(state, { key, tile: "", board: parsedBoard, turn: currentTurn(parsedBoard), view: "spectating", scores: { X: 0, O: 0 }, outcomeId: "", leaving: false, spectator: true });
+    Object.assign(state, { key, tile: "", board: parsedBoard, turn: currentTurn(parsedBoard), view: "spectating", scores: { X: 0, O: 0 }, outcomeId: "", leaving: false, spectator: true, movePending: false, pendingIndex: null });
     setRoom(key, "", true);
     setScores(state.scores);
     renderBoard(parsedBoard, { ...state, spectator: true, finished: Boolean(resultFor(parsedBoard)) });
@@ -166,6 +168,10 @@ async function refreshBoard() {
     }
     const board = parseBoard(boardInfo);
     const result = resultFor(board);
+    if (state.movePending && board[state.pendingIndex] === state.tile) {
+        state.movePending = false;
+        state.pendingIndex = null;
+    }
     state.board = board;
     state.turn = currentTurn(board);
     renderBoard(board, { ...state, finished: Boolean(result), winningLine: result?.line || [], spectator: state.spectator });
@@ -222,7 +228,7 @@ async function requestRematch() {
     try {
         await gameApi.reset(state.key);
         const tile = (await gameApi.create(state.key)).toUpperCase();
-        Object.assign(state, { tile, board: [...EMPTY_BOARD], turn: "X", view: "waiting", outcomeId: "" });
+        Object.assign(state, { tile, board: [...EMPTY_BOARD], turn: "X", view: "waiting", outcomeId: "", movePending: false, pendingIndex: null });
         setRoom(state.key, tile);
         renderBoard(state.board, state);
         showView("waiting");
@@ -257,7 +263,7 @@ async function joinRematch() {
             return;
         }
         closeModal();
-        Object.assign(state, { tile: "O", board: [...EMPTY_BOARD], turn: "X", view: "playing", outcomeId: "", leaving: false });
+        Object.assign(state, { tile: "O", board: [...EMPTY_BOARD], turn: "X", view: "playing", outcomeId: "", leaving: false, movePending: false, pendingIndex: null });
         setRoom(state.key, state.tile);
         renderBoard(state.board, state);
         showView("game");
@@ -279,17 +285,25 @@ function showOpponentLeftPrompt() {
 
 async function playCell(cell) {
     const index = Number(cell.dataset.index);
-    if (state.spectator || state.view !== "playing" || state.turn !== state.tile || state.board[index]) {
+    if (state.spectator || state.view !== "playing" || state.turn !== state.tile || state.board[index] || state.isLoading || state.movePending) {
         return;
     }
+    let moveSubmitted = false;
+    state.movePending = true;
+    state.pendingIndex = index;
     state.isLoading = true;
-    renderBoard(state.board, { ...state, finished: true });
+    renderBoard(state.board, state);
     setStatus("Sending move…", "waiting");
     try {
         await gameApi.move(state.key, state.tile, Number(cell.dataset.x), Number(cell.dataset.y));
+        moveSubmitted = true;
         await refreshBoard();
     } catch (error) {
-        handleError(error, "That move could not be placed.");
+        if (!moveSubmitted) {
+            state.movePending = false;
+            state.pendingIndex = null;
+        }
+        handleError(error, moveSubmitted ? "Move sent. Waiting for the board to update…" : "That move could not be placed.", !moveSubmitted);
         renderBoard(state.board, state);
     } finally {
         state.isLoading = false;
@@ -331,7 +345,7 @@ async function exitGame() {
 
 function returnToLobby() {
     stopPolling();
-    Object.assign(state, { key: "", tile: "", board: [...EMPTY_BOARD], turn: "X", view: "lobby", outcomeId: "", leaving: false, spectator: false });
+    Object.assign(state, { key: "", tile: "", board: [...EMPTY_BOARD], turn: "X", view: "lobby", outcomeId: "", leaving: false, spectator: false, movePending: false, pendingIndex: null });
     elements.keyInput.value = generateKey();
     setKeyError();
     showView("lobby");
