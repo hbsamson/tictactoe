@@ -77,11 +77,15 @@
   flex: 1;
   min-height: 0;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
   align-content: center;
+  align-items: start;
   gap: 6px;
-  width: min(100%, 440px);
+  width: min(100%, calc(100dvh - 275px), 390px);
   margin-inline: auto;
+}
+.game.is-spectator .game-layout {
+  width: min(100%, clamp(260px, calc(100dvh - 330px), 390px));
 }
 .scoreboard {
   grid-column: 1 / -1;
@@ -94,10 +98,19 @@
 .scoreboard .player-card {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  text-align: center;
   flex: 1;
   border: 0;
   background: transparent;
 }
+.scoreboard .player-card > div { min-width: 0; }
+.scoreboard .player-x .player-symbol { order: 1; }
+.scoreboard .player-x > div { order: 2; }
+.scoreboard .player-x .score { order: 3; }
+.scoreboard .player-o .score { order: 1; }
+.scoreboard .player-o > div { order: 2; }
+.scoreboard .player-o .player-symbol { order: 3; }
 .score-divider {
   color: var(--muted);
   font-weight: 900;
@@ -105,7 +118,7 @@
 .board-column {
   grid-column: 1 / -1;
   grid-row: 2;
-  width: min(100%, calc(100dvh - 275px), 390px);
+  width: 100%;
   margin-inline: auto;
 }
 .turn-status {
@@ -132,8 +145,8 @@
 .cheer-header { gap: 5px; }
 .cheer-header .eyebrow { display: none; }
 .game.is-spectator .cheer-header {
-  grid-template-columns: auto 1fr;
-  align-items: center;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
 }
 .game.is-spectator .cheer-header .eyebrow { display: block; }
 .cheer-buttons {
@@ -171,17 +184,21 @@
   .avatar-stage { width: 106px; height: 106px; }
   .avatar-stage img { width: 94px; height: 94px; }
   .avatar-step { width: 36px; }
-  .board-column { width: min(100%, calc(100dvh - 285px), 420px); }
+  .game-layout { width: min(100%, calc(100dvh - 285px), 420px); }
+  .game.is-spectator .game-layout {
+    width: min(100%, clamp(300px, calc(100dvh - 340px), 420px));
+  }
+  .board-column { width: 100%; }
   .player-card { padding: 10px; }
 }
 
 /* Restore the original desktop presentation. */
 @media (min-width: 901px) {
   .app-shell { width: min(1180px, calc(100% - 40px)); }
-  .brand-bar { height: 90px; }
+  .brand-bar { height: 72px; }
   .brand { font-size: 15px; }
   .connection-pill { font-size: 12px; }
-  .view { height: calc(100dvh - 90px); }
+  .view { height: calc(100dvh - 72px); }
   .lobby {
     grid-template-columns: 1.12fr .88fr;
     align-content: normal;
@@ -265,12 +282,12 @@
   .cheer-panel { margin-top: 18px; padding: 18px 16px 14px; }
   .cheer-header { gap: 12px; }
   .cheer-header .eyebrow { display: block; }
-  .cheer-buttons { flex-wrap: wrap; justify-content: normal; gap: 8px; }
+  .cheer-buttons { flex-wrap: wrap; justify-content: center; gap: 8px; }
   .cheer-button { min-height: 36px; padding: 8px 10px; font-size: 11px; }
 
   /* Compact game screen. */
-  .game { padding: 18px 0; }
-  .game-topbar { margin-bottom: 12px; }
+  .game { padding: 12px 0; }
+  .game-topbar { margin-bottom: 10px; }
   .room-key,
   .button-ghost { min-height: 38px; padding: 8px 12px; }
   .game-layout {
@@ -278,6 +295,9 @@
     grid-template-rows: auto auto;
     width: min(520px, 100%);
     gap: 10px;
+  }
+  .game.is-spectator .game-layout {
+    width: min(100%, clamp(340px, calc(100dvh - 330px), 520px));
   }
   .scoreboard {
     grid-column: 1;
@@ -288,6 +308,8 @@
   .score-divider { display: block; }
   .scoreboard .player-card {
     grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    text-align: center;
     flex: 1;
     gap: 9px;
     padding: 10px 12px;
@@ -310,12 +332,12 @@
   .you-are { display: none; }
   .cheer-panel { margin-top: 10px; padding: 10px; }
   .cheer-header {
-    grid-template-columns: auto 1fr;
-    align-items: center;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
     gap: 12px;
   }
   .cheer-header .eyebrow { margin: 0; }
-  .cheer-buttons { flex-wrap: nowrap; }
+  .cheer-buttons { flex-wrap: nowrap; justify-content: center; }
 }
 
 /* Extra compaction for short landscape screens. */
@@ -327,7 +349,8 @@
   .lobby-card { padding: 12px; }
   .mini-grid,
   .radar { display: none; }
-  .board-column { width: min(100%, calc(100dvh - 240px), 340px); }
+  .game-layout { width: min(100%, calc(100dvh - 240px), 340px); }
+  .board-column { width: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {

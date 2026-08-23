@@ -30,6 +30,7 @@
   text-transform: uppercase;
 }
 .scoreboard {
+  width: 100%;
   justify-self: center;
   margin-inline: auto;
 }
@@ -73,6 +74,9 @@
   opacity: 1;
   border-color: rgba(255, 255, 255, 0.35);
   transform: translateY(-4px);
+}
+.scoreboard .player-card.active {
+  transform: none;
 }
 .player-x.active { border-color: rgba(103, 213, 255, 0.75); }
 .player-o.active { border-color: rgba(255, 59, 48, 0.75); }

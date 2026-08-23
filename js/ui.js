@@ -8,7 +8,8 @@ const views = {
 const cells = [...document.querySelectorAll(".cell")];
 const modal = {
     overlay: byId("modalOverlay"), eyebrow: byId("modalEyebrow"), symbol: byId("modalSymbol"),
-    title: byId("modalTitle"), message: byId("modalMessage"), details: byId("modalDetails"), primary: byId("modalPrimaryButton"),
+    title: byId("modalTitle"), message: byId("modalMessage"), details: byId("modalDetails"), score: byId("modalScore"),
+    xScore: byId("modalXScore"), oScore: byId("modalOScore"), primary: byId("modalPrimaryButton"),
     secondary: byId("modalSecondaryButton"), close: byId("modalCloseButton")
 };
 let modalHandlers = {};
@@ -147,7 +148,8 @@ export function showModal(options) {
     });
     modal.details.hidden = !options.details?.length;
     modal.details.closest(".modal").classList.toggle("modal-instructions", Boolean(options.details?.length));
-    modal.primary.textContent = options.primaryLabel || "Continue";
+    setModalScores(options.scores);
+    setButtonContent(modal.primary, options.primaryLabel || "Continue", options.primaryIcon);
     modal.secondary.textContent = options.secondaryLabel || "Back";
     modal.secondary.hidden = !options.onSecondary;
     modal.close.hidden = options.dismissible === false;
@@ -156,6 +158,24 @@ export function showModal(options) {
     document.body.classList.add("modal-open");
     requestAnimationFrame(() => modal.overlay.classList.add("visible"));
     modal.primary.focus();
+}
+
+function setButtonContent(button, label, iconName) {
+    button.replaceChildren();
+    if (iconName) {
+        const icon = document.createElement("i");
+        icon.dataset.lucide = iconName;
+        button.appendChild(icon);
+    }
+    button.append(label);
+    window.lucide?.createIcons();
+}
+
+export function setModalScores(scores) {
+    modal.score.hidden = !scores;
+    if (!scores) return;
+    modal.xScore.textContent = scores.X;
+    modal.oScore.textContent = scores.O;
 }
 
 export function setModalMessage(message) {
@@ -184,9 +204,14 @@ modal.overlay.addEventListener("click", (event) => {
     }
 });
 
-export function toast(message) {
+export function toast(message, options = {}) {
     const element = byId("toast");
     window.clearTimeout(toastTimer);
+    const type = options.type === "chat" ? "chat" : "system";
+    const side = options.side === "right" ? "right" : "left";
+    element.classList.remove("toast-system", "toast-chat", "toast-left", "toast-right", "visible");
+    element.classList.add(`toast-${type}`);
+    if (type === "chat") element.classList.add(`toast-${side}`);
     element.textContent = message;
     element.hidden = false;
     requestAnimationFrame(() => element.classList.add("visible"));

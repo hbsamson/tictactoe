@@ -13,8 +13,8 @@
 
     <main class="app-shell">
         <header class="brand-bar">
-            <a class="brand" href="./" aria-label="Hanni Tic-Tac-Toe home">
-                <span>Hanni<strong>Tic-Tac-Toe</strong></span>
+            <a class="brand" href="./" aria-label="Hannah's Tic-Tac-Toe home">
+                <span>Hannah<strong>Tic-Tac-Toe</strong></span>
             </a>
             <span></span>
             <span id="connectionStatus" class="connection-pill" data-state="busy">Checking server…</span>
@@ -113,8 +113,8 @@
                     </div>
                     <div class="cheer-panel" aria-live="polite">
                         <div class="cheer-header">
-                            <p class="eyebrow">Cheer squad</p>
-                            <div class="cheer-buttons" aria-label="Pre-written encouragements">
+                            <p class="eyebrow">Call out</p>
+                            <div class="cheer-buttons" aria-label="Call-out messages">
                                 <button class="cheer-button" type="button" data-message="Woah!">Woah!</button>
                                 <button class="cheer-button" type="button" data-message="Nice move!">Nice move!</button>
                                 <button class="cheer-button" type="button" data-message="Clutch play!">Clutch play!</button>
@@ -149,6 +149,11 @@
                 </div>
             </div>
             <p id="modalMessage"></p>
+            <div id="modalScore" class="modal-score" hidden aria-label="Match score">
+                <div class="modal-score-side modal-score-x"><span>X</span><strong id="modalXScore">0</strong></div>
+                <span class="modal-score-vs" aria-hidden="true">VS</span>
+                <div class="modal-score-side modal-score-o"><span>O</span><strong id="modalOScore">0</strong></div>
+            </div>
             <ol id="modalDetails" class="modal-details" hidden></ol>
             <div class="modal-actions">
                 <button id="modalPrimaryButton" class="button button-primary" type="button">Continue</button>

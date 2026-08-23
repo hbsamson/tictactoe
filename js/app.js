@@ -4,7 +4,7 @@ import { closeModal,
     elements, 
     renderBoard,
     setBusy, setKeyError, setOffline, setOnline, setRoom, setScores, setStatus, 
-    playGameStart, setModalMessage, showModal, showView,
+    playGameStart, setModalMessage, setModalScores, showModal, showView,
     toast } from "./ui.js";
 
 const POLL_DELAY = 800;
@@ -114,7 +114,7 @@ async function enterRoom(intent) {
             state.view = "playing";
             showView("game");
             playGameStart(state.tile);
-            setStatus("X turn — waiting", "waiting");
+            setStatus("Player X's turn — waiting", "waiting");
             schedulePoll(0);
             if (intent === "create") toast("That key existed, so you joined as O.");
         }
@@ -174,7 +174,7 @@ async function pollServer() {
                 showView("game");
                 if (!state.skipGameStart) playGameStart(state.tile);
                 state.skipGameStart = false;
-                setStatus(state.tile === "X" ? "Your turn — place X" : "X turn — waiting", state.tile === "X" ? "your-turn" : "waiting");
+                setStatus(state.tile === "X" ? "Your turn — place X" : "Player X's turn — waiting", state.tile === "X" ? "your-turn" : "waiting");
                 toast("Player two joined. Game on!");
             }
         }
@@ -236,7 +236,7 @@ async function refreshBoard() {
     }
 
     const isMyTurn = state.turn === state.tile;
-    setStatus(isMyTurn ? `Your turn — place ${state.tile}` : `${state.turn} turn — waiting`, isMyTurn ? "your-turn" : "waiting");
+    setStatus(isMyTurn ? `Your turn — place ${state.tile}` : `Player ${state.turn}'s turn — waiting`, isMyTurn ? "your-turn" : "waiting");
 
     state.view = state.spectator ? "spectating" : "playing";
     if (state.spectator) {
@@ -272,7 +272,8 @@ function handleOutcome(result, board) {
         eyebrow: result.type === "draw" ? "No square left" : won ? "Victory" : "Round complete",
         symbol: result.type === "draw" ? "XO" : result.winner,
         title: result.type === "draw" ? "A perfect draw" : won ? "You own the grid" : "Your rival takes it",
-        message: `Score: X ${state.scores.X} - ${state.scores.O} O. Play another round with the same rival, or leave this room.`, primaryLabel: "Rematch", secondaryLabel: "Exit game", dismissible: false,
+        message: "Play another round with the same rival, or leave this room.", scores: state.scores,
+        primaryLabel: "Rematch", primaryIcon: "refresh-cw", secondaryLabel: "Exit game", dismissible: false,
         onPrimary: requestRematch, onSecondary: exitGame
     });
 }
@@ -336,7 +337,7 @@ function showGameEndModal() {
     showModal({
         eyebrow: "Room reset", symbol: "↻", title: "Your rival wants a rematch",
         message: "Try joining the same room. If they left, we'll return you safely to the lobby.", 
-        primaryLabel: "Join rematch", secondaryLabel: "Exit game", dismissible: false,
+        primaryLabel: "Join rematch", primaryIcon: "refresh-cw", secondaryLabel: "Exit game", dismissible: false,
         onPrimary: joinRematch, 
         onSecondary: exitGame
     });
@@ -374,7 +375,7 @@ async function joinRematch() {
         setRoom(state.key, state.tile, false, state.players);
         renderBoard(state.board, state);
         showView("game");
-        setStatus("X turn — waiting", "waiting");
+        setStatus("Player X's turn — waiting", "waiting");
         schedulePoll(0);
     } catch (error) {
         handleError(error, "The rematch could not be joined.");
@@ -453,14 +454,14 @@ function addCheer(message) {
     const source = state.profile?.name || (state.spectator ? "Spectator" : `Player ${state.tile || "X"}`);
     const entry = { source, text, timestamp: Date.now() };
     localStorage.setItem(cheerStorageKey(state.key), JSON.stringify(entry));
-    toast(`${source}: ${text}`);
+    toast(`${source}: ${text}`, { type: "chat", side: "right" });
 }
 
 function hydrateCheerFromStorage(event) {
     if (!state.key || !event || event.key !== cheerStorageKey(state.key)) return;
     try {
         const entry = JSON.parse(event.newValue);
-        toast(`${entry.source}: ${entry.text}`);
+        toast(`${entry.source}: ${entry.text}`, { type: "chat" });
     } catch {}
 }
 
@@ -619,7 +620,7 @@ function hydrateScoresFromStorage(event) {
     state.scores = readStoredScores(state.key);
     setScores(state.scores);
     if (state.view === "finished" && state.outcomeId.includes(":win:")) {
-        setModalMessage(`Score: X ${state.scores.X} - ${state.scores.O} O. Play another round with the same rival, or leave this room.`);
+        setModalScores(state.scores);
     }
 }
 
