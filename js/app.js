@@ -10,6 +10,7 @@ import { closeModal,
 const POLL_DELAY = 800;
 const KEY_PATTERN = /^[a-z0-9]{4,6}$/i;
 const CHEER_STORAGE_PREFIX = "tictactoe:cheers:";
+const SCORE_STORAGE_PREFIX = "tictactoe:scores:";
 const state = {
     key: "", 
     tile: "", 
@@ -77,6 +78,7 @@ async function enterRoom(intent) {
             return;
         }
 
+        if (playerTile === "X" && intent === "create") saveStoredScores(key, { X: 0, O: 0 });
         beginSession(key, playerTile);
         if (playerTile === "X") {
             state.view = "waiting";
@@ -100,7 +102,7 @@ async function enterRoom(intent) {
 
 function beginSession(key, tile) {
     stopPolling();
-    Object.assign(state, { key, tile, board: [...EMPTY_BOARD], turn: "X", view: "waiting", scores: { X: 0, O: 0 }, outcomeId: "", leaving: false, spectator: false, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
+    Object.assign(state, { key, tile, board: [...EMPTY_BOARD], turn: "X", view: "waiting", scores: readStoredScores(key), outcomeId: "", leaving: false, spectator: false, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
     setRoom(key, tile);
     setScores(state.scores);
     renderBoard(state.board, { ...state, spectator: false });
@@ -109,7 +111,7 @@ function beginSession(key, tile) {
 function beginSpectatorSession(key, board) {
     stopPolling();
     const parsedBoard = [...board];
-    Object.assign(state, { key, tile: "", board: parsedBoard, turn: currentTurn(parsedBoard), view: "spectating", scores: { X: 0, O: 0 }, outcomeId: "", leaving: false, spectator: true, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
+    Object.assign(state, { key, tile: "", board: parsedBoard, turn: currentTurn(parsedBoard), view: "spectating", scores: readStoredScores(key), outcomeId: "", leaving: false, spectator: true, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
     setRoom(key, "", true);
     setScores(state.scores);
     renderBoard(parsedBoard, { ...state, spectator: true, finished: Boolean(resultFor(parsedBoard)) });
@@ -205,8 +207,10 @@ function handleOutcome(result, board) {
     if (state.outcomeId === outcomeId) return;
     state.outcomeId = outcomeId;
     state.view = state.spectator ? "spectating" : "finished";
-    if (!state.spectator && result.winner) {
+    if (!state.spectator && result.winner === state.tile) {
+        state.scores = readStoredScores(state.key);
         state.scores[result.winner] += 1;
+        saveStoredScores(state.key, state.scores);
         setScores(state.scores);
     }
     const won = result.winner === state.tile;
@@ -232,7 +236,7 @@ function handleOutcome(result, board) {
         eyebrow: result.type === "draw" ? "No square left" : won ? "Victory" : "Round complete",
         symbol: result.type === "draw" ? "XO" : result.winner,
         title: result.type === "draw" ? "A perfect draw" : won ? "You own the grid" : "Your rival takes it",
-        message: "Play another round with the same rival, or leave this room", primaryLabel: "Rematch", secondaryLabel: "Exit game", dismissible: false,
+        message: `Score: X ${state.scores.X} - ${state.scores.O} O. Play another round with the same rival, or leave this room.`, primaryLabel: "Rematch", secondaryLabel: "Exit game", dismissible: false,
         onPrimary: requestRematch, onSecondary: exitGame
     });
 }
@@ -432,6 +436,33 @@ function cheerStorageKey(roomKey) {
     return `${CHEER_STORAGE_PREFIX}${roomKey}`;
 }
 
+function scoreStorageKey(roomKey) {
+    return `${SCORE_STORAGE_PREFIX}${roomKey}`;
+}
+
+function readStoredScores(roomKey) {
+    try {
+        const scores = JSON.parse(localStorage.getItem(scoreStorageKey(roomKey)));
+        if (Number.isInteger(scores?.X) && Number.isInteger(scores?.O)) return scores;
+    } catch {}
+    return { X: 0, O: 0 };
+}
+
+function saveStoredScores(roomKey, scores) {
+    try {
+        localStorage.setItem(scoreStorageKey(roomKey), JSON.stringify(scores));
+    } catch {}
+}
+
+function hydrateScoresFromStorage(event) {
+    if (!state.key || event.key !== scoreStorageKey(state.key)) return;
+    state.scores = readStoredScores(state.key);
+    setScores(state.scores);
+    if (state.view === "finished" && state.outcomeId.includes(":win:")) {
+        setModalMessage(`Score: X ${state.scores.X} - ${state.scores.O} O. Play another round with the same rival, or leave this room.`);
+    }
+}
+
 elements.lobbyForm.addEventListener("submit", (event) => { event.preventDefault(); enterRoom("create"); });
 elements.generateKey.addEventListener("click", () => { elements.keyInput.value = generateKey(); setKeyError(); });
 elements.keyInput.addEventListener("input", () => setKeyError());
@@ -451,6 +482,7 @@ window.addEventListener("pagehide", () => {
     }
 });
 window.addEventListener("storage", hydrateCheerFromStorage);
+window.addEventListener("storage", hydrateScoresFromStorage);
 
 elements.keyInput.value = generateKey();
 showView("lobby");
