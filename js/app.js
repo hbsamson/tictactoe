@@ -12,6 +12,7 @@ const CONNECTION_POLL_DELAY = 5000;
 const KEY_PATTERN = /^[a-z0-9]{4,6}$/i;
 const CHEER_STORAGE_PREFIX = "tictactoe:cheers:";
 const SCORE_STORAGE_PREFIX = "tictactoe:scores:";
+const SHARED_KEY_STORAGE = "tictactoe:shared-room-key";
 const state = {
     key: "", 
     tile: "", 
@@ -441,6 +442,26 @@ async function copyKey() {
     }
 }
 
+async function copyLobbyKey() {
+    const key = elements.keyInput.value.trim().toUpperCase();
+    if (!validateKey(key)) return;
+    elements.keyInput.value = key;
+    try { localStorage.setItem(SHARED_KEY_STORAGE, key); } catch {}
+    try {
+        await navigator.clipboard.writeText(key);
+        toast("Game key copied!");
+    } catch {
+        toast(`Game key: ${key}`);
+    }
+}
+
+function hydrateSharedKey(event) {
+    if (state.view !== "lobby" || event.key !== SHARED_KEY_STORAGE || !KEY_PATTERN.test(event.newValue || "")) return;
+    elements.keyInput.value = event.newValue.toUpperCase();
+    setKeyError();
+    toast("Game key received.");
+}
+
 function handleError(error, fallback, modalError = true) {
     console.error(error);
     if (error instanceof ApiError) setOffline();
@@ -481,6 +502,7 @@ function hydrateScoresFromStorage(event) {
 
 elements.lobbyForm.addEventListener("submit", (event) => { event.preventDefault(); enterRoom("create"); });
 elements.generateKey.addEventListener("click", () => { elements.keyInput.value = generateKey(); setKeyError(); });
+elements.copyLobbyKey.addEventListener("click", copyLobbyKey);
 elements.keyInput.addEventListener("input", () => setKeyError());
 elements.join.addEventListener("click", () => enterRoom("join"));
 
@@ -499,6 +521,7 @@ window.addEventListener("pagehide", () => {
 });
 window.addEventListener("storage", hydrateCheerFromStorage);
 window.addEventListener("storage", hydrateScoresFromStorage);
+window.addEventListener("storage", hydrateSharedKey);
 
 elements.keyInput.value = generateKey();
 showView("lobby");
