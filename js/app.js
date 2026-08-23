@@ -27,6 +27,7 @@ const state = {
     outcomeId: "", 
     leaving: false,
     spectator: false,
+    spectatorExitSince: null,
     autoRematch: false,
     autoRematchReady: false,
     skipGameStart: false
@@ -119,7 +120,7 @@ async function enterRoom(intent) {
 
 function beginSession(key, tile) {
     stopPolling();
-    Object.assign(state, { key, tile, board: [...EMPTY_BOARD], turn: "X", view: "waiting", scores: readStoredScores(key), outcomeId: "", leaving: false, spectator: false, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
+    Object.assign(state, { key, tile, board: [...EMPTY_BOARD], turn: "X", view: "waiting", scores: readStoredScores(key), outcomeId: "", leaving: false, spectator: false, spectatorExitSince: null, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
     setRoom(key, tile);
     setScores(state.scores);
     renderBoard(state.board, { ...state, spectator: false });
@@ -128,7 +129,7 @@ function beginSession(key, tile) {
 function beginSpectatorSession(key, board) {
     stopPolling();
     const parsedBoard = [...board];
-    Object.assign(state, { key, tile: "", board: parsedBoard, turn: currentTurn(parsedBoard), view: "spectating", scores: readStoredScores(key), outcomeId: "", leaving: false, spectator: true, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
+    Object.assign(state, { key, tile: "", board: parsedBoard, turn: currentTurn(parsedBoard), view: "spectating", scores: readStoredScores(key), outcomeId: "", leaving: false, spectator: true, spectatorExitSince: null, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
     setRoom(key, "", true);
     setScores(state.scores);
     renderBoard(parsedBoard, { ...state, spectator: true, finished: Boolean(resultFor(parsedBoard)) });
@@ -182,8 +183,19 @@ async function refreshBoard() {
     const boardInfo = await gameApi.board(state.key);
     if (boardInfo === BOARD_PENDING || boardInfo === GAME_EXITED) {
         if (state.view === "spectating") {
+            if (boardInfo === BOARD_PENDING) {
+                state.spectatorExitSince = null;
+                setStatus("Waiting for the rematch…", "waiting");
+                return;
+            }
+            if (state.outcomeId && !state.spectatorExitSince) {
+                state.spectatorExitSince = Date.now();
+                setStatus("Waiting for the players…", "waiting");
+                return;
+            }
+            if (state.spectatorExitSince && Date.now() - state.spectatorExitSince < 3000) return;
             stopPolling();
-            showModal({ eyebrow: "Room closed", symbol: "—", title: "This match is no longer live", message: "The players have left the room. Head back to the lobby and choose another key.", primaryLabel: "Back to lobby", dismissible: false, onPrimary: () => { closeModal(); returnToLobby(); } });
+            showModal({ eyebrow: "Room closed", symbol: "—", title: "This match is no longer live", message: "A player has left the room. Head back to the lobby and choose another key.", primaryLabel: "Back to lobby", dismissible: false, onPrimary: () => { closeModal(); returnToLobby(); } });
             return;
         }
         if (state.view === "finished") {
@@ -197,6 +209,7 @@ async function refreshBoard() {
         return;
     }
     const board = parseBoard(boardInfo);
+    state.spectatorExitSince = null;
     const result = resultFor(board);
     if (state.movePending && board[state.pendingIndex] === state.tile) {
         state.movePending = false;
@@ -214,6 +227,7 @@ async function refreshBoard() {
 
     state.view = state.spectator ? "spectating" : "playing";
     if (state.spectator) {
+        if (!result) state.outcomeId = "";
         setStatus("Watching live match", "waiting");
         return;
     }
@@ -233,15 +247,7 @@ function handleOutcome(result, board) {
     const won = result.winner === state.tile;
     if (state.spectator) {
         setStatus(result.type === "draw" ? "Draw game" : `${result.winner} wins the round`, "finished");
-        showModal({
-            eyebrow: "Match complete",
-            symbol: result.type === "draw" ? "XO" : result.winner,
-            title: result.type === "draw" ? "A perfect draw" : `${result.winner} takes the round`,
-            message: "This room has finished. Return to the lobby to find another game.",
-            primaryLabel: "Back to lobby",
-            dismissible: false,
-            onPrimary: () => { closeModal(); returnToLobby(); }
-        });
+        toast(result.type === "draw" ? "The round ended in a draw." : `${result.winner} won the round.`);
         return;
     }
     setStatus(result.type === "draw" ? "Draw game" : `${result.winner} wins the round`, "finished");
@@ -428,7 +434,7 @@ async function exitGame() {
 function returnToLobby() {
     clearDrawRematchTimer();
     stopPolling();
-    Object.assign(state, { key: "", tile: "", board: [...EMPTY_BOARD], turn: "X", view: "lobby", outcomeId: "", leaving: false, spectator: false, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
+    Object.assign(state, { key: "", tile: "", board: [...EMPTY_BOARD], turn: "X", view: "lobby", outcomeId: "", leaving: false, spectator: false, spectatorExitSince: null, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
     elements.keyInput.value = generateKey();
     setKeyError();
     showView("lobby");
