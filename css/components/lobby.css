@@ -133,11 +133,14 @@
 }
 .icon-button:hover {
   color: var(--ink);
-  transform: rotate(25deg);
 }
 .icon-button svg {
   width: 22px;
   height: 22px;
+  transition: transform 0.2s;
+}
+#generateKeyButton:hover svg {
+  transform: rotate(25deg);
 }
 .field-hint {
   min-height: 18px;

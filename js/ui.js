@@ -17,7 +17,7 @@ let gameStartTimer;
 
 export const elements = {
     lobbyForm: byId("lobbyForm"), keyInput: byId("gameKey"), keyHint: byId("keyHint"),
-    generateKey: byId("generateKeyButton"), create: byId("createButton"), join: byId("joinButton"),
+    generateKey: byId("generateKeyButton"), copyLobbyKey: byId("copyLobbyKeyButton"), create: byId("createButton"), join: byId("joinButton"),
     waitingKey: byId("waitingKey"), waitingStatus: byId("waitingStatus"),
     copyWaitingKey: byId("copyWaitingKey"), cancelWaiting: byId("cancelWaitingButton"),
     activeGameKey: byId("activeGameKey"), copyGameKey: byId("copyGameKey"), exit: byId("exitButton"),
@@ -56,6 +56,7 @@ export function setBusy(busy) {
     elements.join.disabled = busy;
     elements.keyInput.disabled = busy;
     elements.generateKey.disabled = busy;
+    elements.copyLobbyKey.disabled = busy;
     const connection = byId("connectionStatus");
     if (busy) {
         connection.textContent = "Connecting…";
