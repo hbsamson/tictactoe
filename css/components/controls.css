@@ -1,4 +1,8 @@
 .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   min-height: 49px;
   border: 1px solid transparent;
   padding: 13px 20px;
@@ -20,8 +24,6 @@
   cursor: wait;
 }
 .button-primary {
-  display: flex;
-  align-items: center;
   justify-content: space-between;
   background: var(--red);
   box-shadow: 6px 6px 0 var(--red-dark);
@@ -46,6 +48,10 @@
   border-color: var(--line);
 }
 .text-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   border: 0;
   padding: 10px;
   color: var(--muted);
@@ -79,9 +85,20 @@
   letter-spacing: 0.12em;
 }
 .room-key small {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   color: var(--red);
   font-size: 9px;
   font-weight: 900;
+}
+.button svg,
+.text-button svg,
+.room-key svg {
+  width: 1em;
+  height: 1em;
+  flex: 0 0 auto;
+  stroke-width: 2;
 }
 .room-key-large {
   justify-content: center;

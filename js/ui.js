@@ -1,4 +1,5 @@
 const byId = (id) => document.getElementById(id);
+window.lucide?.createIcons();
 const views = { 
     lobby: byId("lobbyView"), 
     waiting: byId("waitingView"), 

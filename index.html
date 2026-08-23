@@ -40,11 +40,11 @@
                 <label for="gameKey">Game key</label>
                 <div class="key-field">
                     <input id="gameKey" name="gameKey" type="text" minlength="4" maxlength="6" autocomplete="off" spellcheck="false" placeholder="e.g. HANNAH" pattern="[A-Za-z0-9]{4,6}" required>
-                    <button id="generateKeyButton" class="icon-button" type="button" aria-label="Generate a new key" title="Generate key">↻</button>
+                    <button id="generateKeyButton" class="icon-button" type="button" aria-label="Generate a new key" title="Generate key"><i data-lucide="refresh-cw">↻</i></button>
                 </div>
                 <p id="keyHint" class="field-hint">For custom keys, use 4-6 alphanumeric characters (letters and numbers only)</p>
                 <div class="lobby-actions">
-                    <button id="createButton" class="button button-primary" type="submit">Create game <span>→</span></button>
+                    <button id="createButton" class="button button-primary" type="submit">Create game <i data-lucide="arrow-right">→</i></button>
                     <button id="joinButton" class="button button-secondary" type="button">Join with key</button>
                 </div>
             </form>
@@ -56,9 +56,9 @@
                 <p class="eyebrow">Room created</p>
                 <h1 id="waitingTitle">Waiting for your rival</h1>
                 <p>Share this game key with the second player</p>
-                <button id="copyWaitingKey" class="room-key room-key-large" type="button" aria-label="Copy game key"><span id="waitingKey"></span><small>Copy</small></button>
+                <button id="copyWaitingKey" class="room-key room-key-large" type="button" aria-label="Copy game key"><span id="waitingKey"></span><small><i data-lucide="copy"></i> Copy</small></button>
                 <p id="waitingStatus" class="waiting-status" aria-live="polite">Checking for player two…</p>
-                <button id="cancelWaitingButton" class="text-button" type="button">Cancel room</button>
+                <button id="cancelWaitingButton" class="text-button" type="button"><i data-lucide="x"></i> Cancel room</button>
             </div>
         </section>
 
@@ -66,8 +66,8 @@
             <div class="game-topbar">
                 <div><p class="eyebrow">Live match</p><h1 id="gameHeading">The grid awaits</h1></div>
                 <div class="room-actions">
-                    <button id="copyGameKey" class="room-key" type="button" aria-label="Copy game key">Room <strong id="activeGameKey"></strong><small>Copy</small></button>
-                    <button id="exitButton" class="button button-ghost" type="button">Exit</button>
+                    <button id="copyGameKey" class="room-key" type="button" aria-label="Copy game key">Room <strong id="activeGameKey"></strong><small><i data-lucide="copy"></i> Copy</small></button>
+                    <button id="exitButton" class="button button-ghost" type="button"><i data-lucide="log-out"></i> Exit</button>
                 </div>
             </div>
 
@@ -127,7 +127,7 @@
 
     <div id="modalOverlay" class="modal-overlay" hidden>
         <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalMessage">
-            <button id="modalCloseButton" class="modal-close" type="button" aria-label="Close">×</button>
+            <button id="modalCloseButton" class="modal-close" type="button" aria-label="Close"><i data-lucide="x">×</i></button>
             <span id="modalSymbol" class="modal-symbol" aria-hidden="true">XO</span>
             <p id="modalEyebrow" class="eyebrow">Match update</p>
             <h2 id="modalTitle">Game update</h2>
@@ -139,6 +139,7 @@
         </section>
     </div>
     <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <script src="https://unpkg.com/lucide@1.33.0/dist/umd/lucide.min.js"></script>
     <script type="module" src="js/app.js"></script>
 </body>
 </html>

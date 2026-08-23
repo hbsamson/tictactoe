@@ -36,6 +36,8 @@
 }
 .modal-close {
   position: absolute;
+  display: grid;
+  place-items: center;
   top: 12px;
   right: 14px;
   width: 38px;
@@ -45,6 +47,10 @@
   background: transparent;
   cursor: pointer;
   font-size: 27px;
+}
+.modal-close svg {
+  width: 24px;
+  height: 24px;
 }
 .modal-symbol {
   display: grid;
