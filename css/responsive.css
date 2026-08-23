@@ -365,6 +365,16 @@
     opacity: 1;
     transform: none;
   }
+  .game-start-overlay.is-playing .game-start-kicker,
+  .game-start-overlay.is-playing .game-start-word,
+  .game-start-overlay.is-playing .game-start-role {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .game-start-overlay.is-playing .game-start-word {
+    transform: translate(-50%, -50%) rotate(-5deg) skewX(-8deg);
+  }
   .game-start-overlay.is-playing::before {
     animation: none;
     opacity: .55;

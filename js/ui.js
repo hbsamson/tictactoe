@@ -34,7 +34,7 @@ export function showView(name) {
 export function playGameStart(tile) {
     const overlay = byId("gameStartOverlay");
     const role = byId("gameStartRole");
-    const duration = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 650 : 2250;
+    const duration = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 650 : 2200;
 
     window.clearTimeout(gameStartTimer);
     role.textContent = `You play ${tile}`;
