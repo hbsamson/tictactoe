@@ -4,7 +4,7 @@ import { closeModal,
     elements, 
     renderBoard,
     setBusy, setKeyError, setOffline, setRoom, setScores, setStatus, 
-    playGameStart, showModal, showView,
+    playGameStart, setModalMessage, showModal, showView,
     toast } from "./ui.js";
 
 const POLL_DELAY = 800;
@@ -23,8 +23,12 @@ const state = {
     pendingIndex: null,
     outcomeId: "", 
     leaving: false,
-    spectator: false
+    spectator: false,
+    autoRematch: false,
+    autoRematchReady: false,
+    skipGameStart: false
 };
+let drawRematchTimer = null;
 
 function generateKey() {
     return crypto.randomUUID().slice(0, 6).toUpperCase();
@@ -96,7 +100,7 @@ async function enterRoom(intent) {
 
 function beginSession(key, tile) {
     stopPolling();
-    Object.assign(state, { key, tile, board: [...EMPTY_BOARD], turn: "X", view: "waiting", scores: { X: 0, O: 0 }, outcomeId: "", leaving: false, spectator: false, movePending: false, pendingIndex: null });
+    Object.assign(state, { key, tile, board: [...EMPTY_BOARD], turn: "X", view: "waiting", scores: { X: 0, O: 0 }, outcomeId: "", leaving: false, spectator: false, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
     setRoom(key, tile);
     setScores(state.scores);
     renderBoard(state.board, { ...state, spectator: false });
@@ -105,7 +109,7 @@ function beginSession(key, tile) {
 function beginSpectatorSession(key, board) {
     stopPolling();
     const parsedBoard = [...board];
-    Object.assign(state, { key, tile: "", board: parsedBoard, turn: currentTurn(parsedBoard), view: "spectating", scores: { X: 0, O: 0 }, outcomeId: "", leaving: false, spectator: true, movePending: false, pendingIndex: null });
+    Object.assign(state, { key, tile: "", board: parsedBoard, turn: currentTurn(parsedBoard), view: "spectating", scores: { X: 0, O: 0 }, outcomeId: "", leaving: false, spectator: true, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
     setRoom(key, "", true);
     setScores(state.scores);
     renderBoard(parsedBoard, { ...state, spectator: true, finished: Boolean(resultFor(parsedBoard)) });
@@ -136,7 +140,8 @@ async function pollServer() {
             if (started) {
                 state.view = "playing";
                 showView("game");
-                playGameStart(state.tile);
+                if (!state.skipGameStart) playGameStart(state.tile);
+                state.skipGameStart = false;
                 setStatus(state.tile === "X" ? "Your turn" : "Opponent's turn", state.tile === "X" ? "your-turn" : "waiting");
                 toast("Player two joined. Game on!");
             }
@@ -162,7 +167,13 @@ async function refreshBoard() {
             showModal({ eyebrow: "Room closed", symbol: "—", title: "This match is no longer live", message: "The players have left the room. Head back to the lobby and choose another key.", primaryLabel: "Back to lobby", dismissible: false, onPrimary: () => { closeModal(); returnToLobby(); } });
             return;
         }
-        if (state.view === "finished") showGameEndModal();
+        if (state.view === "finished") {
+            if (state.autoRematch && state.autoRematchReady) joinRematch();
+            else if (state.autoRematch) {
+                state.autoRematch = false;
+                showOpponentLeftPrompt();
+            } else showGameEndModal();
+        }
         else if (state.view === "playing") showOpponentLeftPrompt();
         return;
     }
@@ -213,6 +224,10 @@ function handleOutcome(result, board) {
         return;
     }
     setStatus(result.type === "draw" ? "Draw game" : `${result.winner} wins the round`, "finished");
+    if (result.type === "draw") {
+        startDrawRematch();
+        return;
+    }
     showModal({
         eyebrow: result.type === "draw" ? "No square left" : won ? "Victory" : "Round complete",
         symbol: result.type === "draw" ? "XO" : result.winner,
@@ -222,13 +237,46 @@ function handleOutcome(result, board) {
     });
 }
 
+function startDrawRematch() {
+    clearDrawRematchTimer();
+    state.autoRematch = true;
+    state.autoRematchReady = false;
+    let seconds = 7;
+    showModal({
+        eyebrow: "No square left",
+        symbol: "XO",
+        title: "A perfect draw",
+        message: `Next round starts in ${seconds} seconds.`,
+        primaryLabel: "Exit game",
+        dismissible: false,
+        onPrimary: exitGame
+    });
+    drawRematchTimer = window.setInterval(() => {
+        seconds -= 1;
+        if (seconds > 0) {
+            setModalMessage(`Next round starts in ${seconds} seconds.`);
+            return;
+        }
+        clearDrawRematchTimer();
+        state.autoRematchReady = true;
+        setModalMessage(state.tile === "X" ? "Starting the next round…" : "Waiting for the next round…");
+        if (state.tile === "X") requestRematch();
+    }, 1000);
+}
+
+function clearDrawRematchTimer() {
+    window.clearInterval(drawRematchTimer);
+    drawRematchTimer = null;
+}
+
 async function requestRematch() {
+    clearDrawRematchTimer();
     closeModal();
     stopPolling();
     try {
         await gameApi.reset(state.key);
         const tile = (await gameApi.create(state.key)).toUpperCase();
-        Object.assign(state, { tile, board: [...EMPTY_BOARD], turn: "X", view: "waiting", outcomeId: "", movePending: false, pendingIndex: null });
+        Object.assign(state, { tile, board: [...EMPTY_BOARD], turn: "X", view: "waiting", outcomeId: "", movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: true });
         setRoom(state.key, tile);
         renderBoard(state.board, state);
         showView("waiting");
@@ -253,9 +301,22 @@ function showGameEndModal() {
 }
 
 async function joinRematch() {
+    clearDrawRematchTimer();
+    stopPolling();
+    state.leaving = true;
     try {
         const tile = (await gameApi.create(state.key)).toUpperCase();
         if (tile === "X") {
+            if (state.autoRematch) {
+                closeModal();
+                Object.assign(state, { tile: "X", board: [...EMPTY_BOARD], turn: "X", view: "waiting", outcomeId: "", leaving: false, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: true });
+                setRoom(state.key, state.tile);
+                renderBoard(state.board, state);
+                showView("waiting");
+                elements.waitingStatus.textContent = "Waiting for your rival…";
+                schedulePoll(0);
+                return;
+            }
             await gameApi.reset(state.key);
             closeModal();
             returnToLobby();
@@ -263,11 +324,10 @@ async function joinRematch() {
             return;
         }
         closeModal();
-        Object.assign(state, { tile: "O", board: [...EMPTY_BOARD], turn: "X", view: "playing", outcomeId: "", leaving: false, movePending: false, pendingIndex: null });
+        Object.assign(state, { tile: "O", board: [...EMPTY_BOARD], turn: "X", view: "playing", outcomeId: "", leaving: false, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: true });
         setRoom(state.key, state.tile);
         renderBoard(state.board, state);
         showView("game");
-        playGameStart(state.tile);
         setStatus("Opponent's turn", "waiting");
         schedulePoll(0);
     } catch (error) {
@@ -329,6 +389,7 @@ function hydrateCheerFromStorage(event) {
 }
 
 async function exitGame() {
+    clearDrawRematchTimer();
     closeModal();
     stopPolling();
     state.leaving = true;
@@ -344,8 +405,9 @@ async function exitGame() {
 }
 
 function returnToLobby() {
+    clearDrawRematchTimer();
     stopPolling();
-    Object.assign(state, { key: "", tile: "", board: [...EMPTY_BOARD], turn: "X", view: "lobby", outcomeId: "", leaving: false, spectator: false, movePending: false, pendingIndex: null });
+    Object.assign(state, { key: "", tile: "", board: [...EMPTY_BOARD], turn: "X", view: "lobby", outcomeId: "", leaving: false, spectator: false, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
     elements.keyInput.value = generateKey();
     setKeyError();
     showView("lobby");

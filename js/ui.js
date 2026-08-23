@@ -127,6 +127,10 @@ export function showModal(options) {
     modal.primary.focus();
 }
 
+export function setModalMessage(message) {
+    modal.message.textContent = message;
+}
+
 export function closeModal() {
     modal.overlay.classList.remove("visible");
     document.body.classList.remove("modal-open");
