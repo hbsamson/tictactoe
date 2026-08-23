@@ -375,6 +375,32 @@ function disconnectFromClosedRoom() {
     toast("A player left. The room was closed.");
 }
 
+function confirmExit() {
+    if (state.spectator) {
+        showModal({
+            eyebrow: "Leave spectator view",
+            symbol: "?",
+            title: "Stop watching?",
+            message: "You will be returned to the lobby. The players and their current game will not be affected.",
+            primaryLabel: "Leave room",
+            secondaryLabel: "Keep watching",
+            onPrimary: exitGame,
+            onSecondary: closeModal
+        });
+        return;
+    }
+    showModal({
+        eyebrow: "Leave match",
+        symbol: "?",
+        title: "Exit this game?",
+        message: "The room will close for both players and the current round will end.",
+        primaryLabel: "Exit game",
+        secondaryLabel: "Keep playing",
+        onPrimary: exitGame,
+        onSecondary: closeModal
+    });
+}
+
 async function playCell(cell) {
     const index = Number(cell.dataset.index);
     if (state.spectator || state.view !== "playing" || state.turn !== state.tile || state.board[index] || state.isLoading || state.movePending) {
@@ -523,7 +549,7 @@ elements.copyGameKey.addEventListener("click", copyKey);
 elements.cheerButtons.forEach((button) => button.addEventListener("click", () => addCheer(button.dataset.message)));
 
 elements.board.addEventListener("click", (event) => { const cell = event.target.closest(".cell"); if (cell) playCell(cell); });
-elements.exit.addEventListener("click", () => showModal({ eyebrow: "Leave match", symbol: "?", title: "Exit this game?", message: "The room will close for both players and the current round will end.", primaryLabel: "Exit game", secondaryLabel: "Keep playing", onPrimary: exitGame, onSecondary: closeModal }));
+elements.exit.addEventListener("click", confirmExit);
 
 window.addEventListener("pagehide", () => {
     if (state.key && state.view !== "lobby" && !state.leaving && !state.spectator) {
