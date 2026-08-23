@@ -2,8 +2,7 @@ import { gameApi, ApiError } from "./api.js";
 import { BOARD_PENDING, GAME_EXITED, EMPTY_BOARD, currentTurn, parseBoard, resultFor } from "./game.js";
 import { closeModal, 
     elements, 
-    renderBoard, 
-    renderCheers, 
+    renderBoard,
     setBusy, setKeyError, setOffline, setRoom, setScores, setStatus, 
     playGameStart, showModal, showView,
     toast } from "./ui.js";
@@ -22,8 +21,7 @@ const state = {
     isLoading: false, 
     outcomeId: "", 
     leaving: false,
-    spectator: false, 
-    cheers: []
+    spectator: false
 };
 
 function generateKey() {
@@ -96,23 +94,19 @@ async function enterRoom(intent) {
 
 function beginSession(key, tile) {
     stopPolling();
-    Object.assign(state, { key, tile, board: [...EMPTY_BOARD], turn: "X", view: "waiting", scores: { X: 0, O: 0 }, outcomeId: "", leaving: false, spectator: false, cheers: [] });
+    Object.assign(state, { key, tile, board: [...EMPTY_BOARD], turn: "X", view: "waiting", scores: { X: 0, O: 0 }, outcomeId: "", leaving: false, spectator: false });
     setRoom(key, tile);
     setScores(state.scores);
     renderBoard(state.board, { ...state, spectator: false });
-    state.cheers = readStoredCheers(key).slice(-6);
-    renderCheers(state.cheers);
 }
 
 function beginSpectatorSession(key, board) {
     stopPolling();
     const parsedBoard = [...board];
-    Object.assign(state, { key, tile: "", board: parsedBoard, turn: currentTurn(parsedBoard), view: "spectating", scores: { X: 0, O: 0 }, outcomeId: "", leaving: false, spectator: true, cheers: [] });
+    Object.assign(state, { key, tile: "", board: parsedBoard, turn: currentTurn(parsedBoard), view: "spectating", scores: { X: 0, O: 0 }, outcomeId: "", leaving: false, spectator: true });
     setRoom(key, "", true);
     setScores(state.scores);
-    state.cheers = readStoredCheers(key).slice(-6);
     renderBoard(parsedBoard, { ...state, spectator: true, finished: Boolean(resultFor(parsedBoard)) });
-    renderCheers(state.cheers);
     showView("game");
     setStatus("Watching live match", "waiting");
     schedulePoll(0);
@@ -308,18 +302,16 @@ function addCheer(message) {
     if (!text || !state.key) return;
     const source = state.spectator ? "Spectator" : `Player ${state.tile || "X"}`;
     const entry = { source, text, timestamp: Date.now() };
-    const roomCheerKey = cheerStorageKey(state.key);
-    const existing = readStoredCheers(state.key);
-    const next = [...existing, entry].slice(-10);
-    localStorage.setItem(roomCheerKey, JSON.stringify(next));
-    updateCheerFeed(entry, true);
+    localStorage.setItem(cheerStorageKey(state.key), JSON.stringify(entry));
+    toast(`${source}: ${text}`);
 }
 
 function hydrateCheerFromStorage(event) {
     if (!state.key || !event || event.key !== cheerStorageKey(state.key)) return;
-    const latest = readStoredCheers(state.key).slice(-1)[0];
-    if (!latest) return;
-    updateCheerFeed(latest, true);
+    try {
+        const entry = JSON.parse(event.newValue);
+        toast(`${entry.source}: ${entry.text}`);
+    } catch {}
 }
 
 async function exitGame() {
@@ -339,10 +331,9 @@ async function exitGame() {
 
 function returnToLobby() {
     stopPolling();
-    Object.assign(state, { key: "", tile: "", board: [...EMPTY_BOARD], turn: "X", view: "lobby", outcomeId: "", leaving: false, spectator: false, cheers: [] });
+    Object.assign(state, { key: "", tile: "", board: [...EMPTY_BOARD], turn: "X", view: "lobby", outcomeId: "", leaving: false, spectator: false });
     elements.keyInput.value = generateKey();
     setKeyError();
-    renderCheers(state.cheers);
     showView("lobby");
 }
 
@@ -365,26 +356,6 @@ function cheerStorageKey(roomKey) {
     return `${CHEER_STORAGE_PREFIX}${roomKey}`;
 }
 
-function readStoredCheers(roomKey) {
-    if (!roomKey) return [];
-    try {
-        const value = localStorage.getItem(cheerStorageKey(roomKey));
-        const parsed = value ? JSON.parse(value) : [];
-        return Array.isArray(parsed) ? parsed : [];
-    } catch {
-        return [];
-    }
-}
-
-function updateCheerFeed(entry, shouldToast = true) {
-    const seen = state.cheers.some((msg) => msg.timestamp === entry.timestamp && msg.text === entry.text && msg.source === entry.source);
-    if (seen) return;
-    state.cheers = [...state.cheers, entry].slice(-6);
-    renderCheers(state.cheers);
-    if (shouldToast) toast(`${entry.source}: ${entry.text}`);
-}
-
-
 elements.lobbyForm.addEventListener("submit", (event) => { event.preventDefault(); enterRoom("create"); });
 elements.generateKey.addEventListener("click", () => { elements.keyInput.value = generateKey(); setKeyError(); });
 elements.keyInput.addEventListener("input", () => setKeyError());
@@ -406,5 +377,4 @@ window.addEventListener("pagehide", () => {
 window.addEventListener("storage", hydrateCheerFromStorage);
 
 elements.keyInput.value = generateKey();
-renderCheers(state.cheers);
 showView("lobby");

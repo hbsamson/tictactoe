@@ -72,11 +72,20 @@
             </div>
 
             <div class="game-layout">
+                <div class="scoreboard" aria-label="Scoreboard">
                 <aside class="player-card player-x" id="playerXCard">
                     <span class="player-symbol">X</span><div><small>Player one</small><strong id="playerXLabel">Opponent</strong></div><b id="xScore" class="score">0</b>
                 </aside>
+                <span class="score-divider" aria-hidden="true">-</span>
+                <aside class="player-card player-o" id="playerOCard">
+                    <span class="player-symbol">O</span><div><small>Player two</small><strong id="playerOLabel">Opponent</strong></div><b id="oScore" class="score">0</b>
+                </aside>
+                </div>
                 <div class="board-column">
-                    <div id="turnStatus" class="turn-status" role="status" aria-live="polite"><span class="turn-dot"></span><strong id="statusText">Preparing match…</strong></div>
+                    <div id="turnStatus" class="turn-status" role="status" aria-live="polite">
+                        <span class="turn-message"><span class="turn-dot"></span><strong id="statusText">Preparing match…</strong></span>
+                        <span class="you-are-mobile">You are <strong id="playerTileMobile">—</strong></span>
+                    </div>
                     <div id="board" class="board" role="grid" aria-label="Tic-Tac-Toe board">
                         <button class="cell" type="button" role="gridcell" data-index="0" data-x="0" data-y="0" data-label="Top left" aria-label="Top left, empty" disabled></button>
                         <button class="cell" type="button" role="gridcell" data-index="1" data-x="1" data-y="0" data-label="Top center" aria-label="Top center, empty" disabled></button>
@@ -99,12 +108,8 @@
                                 <button class="cheer-button" type="button" data-message="Clutch play!">Clutch play!</button>
                             </div>
                         </div>
-                        <ul id="cheerFeed" class="cheer-feed" aria-live="polite"></ul>
                     </div>
                 </div>
-                <aside class="player-card player-o" id="playerOCard">
-                    <span class="player-symbol">O</span><div><small>Player two</small><strong id="playerOLabel">Opponent</strong></div><b id="oScore" class="score">0</b>
-                </aside>
             </div>
         </section>
     </main>

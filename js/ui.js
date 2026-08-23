@@ -21,12 +21,11 @@ export const elements = {
     copyWaitingKey: byId("copyWaitingKey"), cancelWaiting: byId("cancelWaitingButton"),
     activeGameKey: byId("activeGameKey"), copyGameKey: byId("copyGameKey"), exit: byId("exitButton"),
     board: byId("board"), cells,
-    cheerFeed: byId("cheerFeed"), cheerButtons: [...document.querySelectorAll(".cheer-button")]
+    cheerButtons: [...document.querySelectorAll(".cheer-button")]
 };
 
 export function showView(name) {
     Object.entries(views).forEach(([viewName, view]) => { view.hidden = viewName !== name; });
-    window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 export function playGameStart(tile) {
@@ -81,6 +80,7 @@ export function setRoom(key, tile, spectator = false) {
     elements.waitingKey.textContent = key;
     elements.activeGameKey.textContent = key;
     byId("playerTile").textContent = spectator ? "Viewer" : tile || "—";
+    byId("playerTileMobile").textContent = spectator ? "Viewer" : tile || "—";
     byId("playerXLabel").textContent = spectator ? "Player X" : tile === "X" ? "You" : "Opponent";
     byId("playerOLabel").textContent = spectator ? "Player O" : tile === "O" ? "You" : "Opponent";
 }
@@ -107,17 +107,6 @@ export function setStatus(message, state = "waiting") {
 export function setScores(scores) {
     byId("xScore").textContent = scores.X;
     byId("oScore").textContent = scores.O;
-}
-
-export function renderCheers(messages = []) {
-    const feed = elements.cheerFeed;
-    feed.innerHTML = "";
-    messages.slice(-6).forEach(({ source, text }) => {
-        const item = document.createElement("li");
-        item.className = "cheer-item";
-        item.innerHTML = `<span>${source}</span><strong>${text}</strong>`;
-        feed.appendChild(item);
-    });
 }
 
 export function showModal(options) {

@@ -32,29 +32,3 @@
   border-color: rgba(103, 213, 255, 0.6);
   background: rgba(103, 213, 255, 0.08);
 }
-.cheer-feed {
-  list-style: none;
-  padding: 0;
-  margin: 14px 0 0;
-  display: grid;
-  gap: 8px;
-}
-.cheer-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 8px 10px;
-  border-left: 3px solid var(--red);
-  background: rgba(255, 255, 255, 0.03);
-}
-.cheer-item span {
-  color: var(--muted);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.cheer-item strong {
-  color: var(--ink);
-  font-size: 12px;
-}
