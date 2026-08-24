@@ -1,20 +1,18 @@
 import { gameApi, ApiError } from "./api.js";
+import { CONNECTION_POLL_DELAY, POLL_DELAY } from "./config.js";
 import { BOARD_PENDING, GAME_EXITED, EMPTY_BOARD, currentTurn, parseBoard, resultFor } from "./game.js";
-import { closeModal, 
-    elements, 
+import { changeAvatar, generateKey, getLobbyProfile, isValidKey } from "./lobby.js";
+import { closeModal, setModalMessage, setModalScores, showModal, toast } from "./notifications.js";
+import {
+    cheerFromStorageEvent, isPlayerProfilesEvent, isScoresEvent, publishCheer, publishSharedKey,
+    readPlayerProfiles, readStoredScores, savePlayerProfile, savePlayerProfiles, saveStoredScores,
+    sharedKeyFromStorageEvent
+} from "./room-storage.js";
+import { elements,
     renderBoard,
     setBusy, setKeyError, setOffline, setOnline, setRoom, setScores, setStatus, 
-    playGameStart, setModalMessage, setModalScores, showModal, showView,
-    toast } from "./ui.js";
+    playGameStart, showView } from "./ui.js";
 
-const POLL_DELAY = 800;
-const CONNECTION_POLL_DELAY = 5000;
-const KEY_PATTERN = /^[a-z0-9]{4,6}$/i;
-const CHEER_STORAGE_PREFIX = "tictactoe:cheers:";
-const SCORE_STORAGE_PREFIX = "tictactoe:scores:";
-const PLAYER_STORAGE_PREFIX = "tictactoe:players:";
-const SHARED_KEY_STORAGE = "tictactoe:shared-room-key";
-const PLAYER_AVATARS = ["ann", "makoto", "morgana", "ren", "ryuji", "yusuke"];
 const state = {
     key: "", 
     tile: "", 
@@ -42,7 +40,7 @@ let connectionPollTimer = null;
 async function pollConnectionStatus() {
     window.clearTimeout(connectionPollTimer);
     const enteredKey = elements.keyInput.value.trim();
-    const probeKey = state.key || (KEY_PATTERN.test(enteredKey) ? enteredKey : generateKey());
+    const probeKey = state.key || (isValidKey(enteredKey) ? enteredKey : generateKey());
     try {
         await gameApi.check(probeKey);
         setOnline();
@@ -53,12 +51,8 @@ async function pollConnectionStatus() {
     }
 }
 
-function generateKey() {
-    return crypto.randomUUID().slice(0, 6).toUpperCase();
-}
-
 function validateKey(key) {
-    if (!KEY_PATTERN.test(key)) {
+    if (!isValidKey(key)) {
         setKeyError("Invalid key pattern. Enter 3-6 alphanumeric characters (letters and numbers only)");
         elements.keyInput.focus();
         return false;
@@ -127,7 +121,7 @@ async function enterRoom(intent) {
 
 function beginSession(key, tile) {
     stopPolling();
-    const profile = getLobbyProfile();
+    const profile = getLobbyProfile(elements);
     savePlayerProfile(key, tile, profile);
     const players = readPlayerProfiles(key);
     Object.assign(state, { key, tile, board: [...EMPTY_BOARD], turn: "X", view: "waiting", scores: readStoredScores(key), outcomeId: "", leaving: false, spectator: false, spectatorExitSince: null, profile, players, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
@@ -139,7 +133,7 @@ function beginSession(key, tile) {
 function beginSpectatorSession(key, board) {
     stopPolling();
     const parsedBoard = [...board];
-    const profile = getLobbyProfile();
+    const profile = getLobbyProfile(elements);
     const players = readPlayerProfiles(key);
     Object.assign(state, { key, tile: "", board: parsedBoard, turn: currentTurn(parsedBoard), view: "spectating", scores: readStoredScores(key), outcomeId: "", leaving: false, spectator: true, spectatorExitSince: null, profile, players, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
     setRoom(key, "", true, players);
@@ -269,10 +263,10 @@ function handleOutcome(result, board) {
         return;
     }
     showModal({
-        eyebrow: result.type === "draw" ? "No square left" : won ? "Victory" : "Round complete",
+        eyebrow: result.type === "draw" ? "No square left" : won ? "Victory" : "Defeat",
         symbol: result.type === "draw" ? "XO" : result.winner,
         title: result.type === "draw" ? "A perfect draw" : won ? "You own the grid" : "Your rival takes it",
-        message: "Play another round with the same rival, or leave this room.", scores: state.scores,
+        message: "Play another round with the same rival, or leave this room", scores: state.scores,
         primaryLabel: "Rematch", primaryIcon: "refresh-cw", secondaryLabel: "Exit game", dismissible: false,
         onPrimary: requestRematch, onSecondary: exitGame
     });
@@ -453,16 +447,13 @@ function addCheer(message) {
     if (!text || !state.key) return;
     const source = state.profile?.name || (state.spectator ? "Spectator" : `Player ${state.tile || "X"}`);
     const entry = { source, text, timestamp: Date.now() };
-    localStorage.setItem(cheerStorageKey(state.key), JSON.stringify(entry));
+    publishCheer(state.key, entry);
     toast(`${source}: ${text}`, { type: "chat", side: "right" });
 }
 
 function hydrateCheerFromStorage(event) {
-    if (!state.key || !event || event.key !== cheerStorageKey(state.key)) return;
-    try {
-        const entry = JSON.parse(event.newValue);
-        toast(`${entry.source}: ${entry.text}`, { type: "chat" });
-    } catch {}
+    const entry = cheerFromStorageEvent(event, state.key);
+    if (entry) toast(`${entry.source}: ${entry.text}`, { type: "chat" });
 }
 
 async function exitGame() {
@@ -502,7 +493,7 @@ async function copyLobbyKey() {
     const key = elements.keyInput.value.trim().toUpperCase();
     if (!validateKey(key)) return;
     elements.keyInput.value = key;
-    try { localStorage.setItem(SHARED_KEY_STORAGE, key); } catch {}
+    try { publishSharedKey(key); } catch {}
     try {
         await navigator.clipboard.writeText(key);
         toast("Game key copied!");
@@ -512,8 +503,9 @@ async function copyLobbyKey() {
 }
 
 function hydrateSharedKey(event) {
-    if (state.view !== "lobby" || event.key !== SHARED_KEY_STORAGE || !KEY_PATTERN.test(event.newValue || "")) return;
-    elements.keyInput.value = event.newValue.toUpperCase();
+    const key = sharedKeyFromStorageEvent(event);
+    if (state.view !== "lobby" || !key) return;
+    elements.keyInput.value = key;
     setKeyError();
     toast("Game key received.");
 }
@@ -523,14 +515,6 @@ function handleError(error, fallback, modalError = true) {
     if (error instanceof ApiError) setOffline();
     if (!modalError) return setStatus(fallback, "offline");
     showModal({ eyebrow: "Something went wrong", symbol: "!", title: fallback, message: error?.message || fallback, primaryLabel: "OK", onPrimary: closeModal });
-}
-
-function cheerStorageKey(roomKey) {
-    return `${CHEER_STORAGE_PREFIX}${roomKey}`;
-}
-
-function scoreStorageKey(roomKey) {
-    return `${SCORE_STORAGE_PREFIX}${roomKey}`;
 }
 
 function showHowToPlay() {
@@ -550,73 +534,14 @@ function showHowToPlay() {
     });
 }
 
-function playerStorageKey(roomKey) {
-    return `${PLAYER_STORAGE_PREFIX}${roomKey}`;
-}
-
-function getLobbyProfile() {
-    const avatar = elements.playerAvatar.value || "ren";
-    const defaultName = avatar.charAt(0).toUpperCase() + avatar.slice(1);
-    return { name: elements.playerName.value.trim().slice(0, 10) || defaultName, avatar };
-}
-
-function changeAvatar(direction) {
-    const previousAvatar = elements.playerAvatar.value;
-    const previousName = previousAvatar.charAt(0).toUpperCase() + previousAvatar.slice(1);
-    const currentIndex = PLAYER_AVATARS.indexOf(previousAvatar);
-    const avatar = PLAYER_AVATARS[(currentIndex + direction + PLAYER_AVATARS.length) % PLAYER_AVATARS.length];
-    const name = avatar.charAt(0).toUpperCase() + avatar.slice(1);
-    const usesDefaultName = !elements.playerName.value.trim() || elements.playerName.value.trim() === previousName;
-    elements.playerAvatar.value = avatar;
-    elements.avatarPreview.src = `assets/icons/${avatar}.png`;
-    elements.avatarPreview.alt = name;
-    if (usesDefaultName) elements.playerName.value = name;
-}
-
-function readPlayerProfiles(roomKey) {
-    try {
-        const players = JSON.parse(localStorage.getItem(playerStorageKey(roomKey))) || {};
-        return Object.fromEntries(["X", "O"].flatMap((tile) => {
-            const player = players[tile];
-            if (typeof player?.name !== "string" || !PLAYER_AVATARS.includes(player.avatar)) return [];
-            return [[tile, { name: player.name.slice(0, 10), avatar: player.avatar }]];
-        }));
-    } catch {
-        return {};
-    }
-}
-
-function savePlayerProfiles(roomKey, players) {
-    try { localStorage.setItem(playerStorageKey(roomKey), JSON.stringify(players)); } catch {}
-}
-
-function savePlayerProfile(roomKey, tile, profile) {
-    if (!roomKey || !tile || !profile) return;
-    savePlayerProfiles(roomKey, { ...readPlayerProfiles(roomKey), [tile]: profile });
-}
-
 function hydratePlayerProfiles(event) {
-    if (!state.key || event.key !== playerStorageKey(state.key)) return;
+    if (!isPlayerProfilesEvent(event, state.key)) return;
     state.players = readPlayerProfiles(state.key);
     setRoom(state.key, state.tile, state.spectator, state.players);
 }
 
-function readStoredScores(roomKey) {
-    try {
-        const scores = JSON.parse(localStorage.getItem(scoreStorageKey(roomKey)));
-        if (Number.isInteger(scores?.X) && Number.isInteger(scores?.O)) return scores;
-    } catch {}
-    return { X: 0, O: 0 };
-}
-
-function saveStoredScores(roomKey, scores) {
-    try {
-        localStorage.setItem(scoreStorageKey(roomKey), JSON.stringify(scores));
-    } catch {}
-}
-
 function hydrateScoresFromStorage(event) {
-    if (!state.key || event.key !== scoreStorageKey(state.key)) return;
+    if (!isScoresEvent(event, state.key)) return;
     state.scores = readStoredScores(state.key);
     setScores(state.scores);
     if (state.view === "finished" && state.outcomeId.includes(":win:")) {
@@ -629,8 +554,8 @@ elements.howToPlay.addEventListener("click", showHowToPlay);
 elements.generateKey.addEventListener("click", () => { elements.keyInput.value = generateKey(); setKeyError(); });
 elements.copyLobbyKey.addEventListener("click", copyLobbyKey);
 elements.keyInput.addEventListener("input", () => setKeyError());
-elements.previousAvatar.addEventListener("click", () => changeAvatar(-1));
-elements.nextAvatar.addEventListener("click", () => changeAvatar(1));
+elements.previousAvatar.addEventListener("click", () => changeAvatar(elements, -1));
+elements.nextAvatar.addEventListener("click", () => changeAvatar(elements, 1));
 elements.join.addEventListener("click", () => enterRoom("join"));
 
 elements.cancelWaiting.addEventListener("click", exitGame);

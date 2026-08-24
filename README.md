@@ -8,7 +8,15 @@ A responsive two-player Tic-Tac-Toe web application. The browser UI is built wit
 .
 |-- index.html                     Browser UI
 |-- css/                           Layout, components, and responsive styles
-|-- js/                            API, game rules, UI, and application flow
+|-- js/
+|   |-- app.js                     Application orchestration and match lifecycle
+|   |-- api.js                     Payara endpoint client
+|   |-- config.js                  Shared timing, key, and avatar configuration
+|   |-- game.js                    Board parsing, turns, and result rules
+|   |-- lobby.js                   Key, player profile, and avatar behavior
+|   |-- notifications.js           Modals and toast notifications
+|   |-- room-storage.js            Cross-tab room profiles, scores, and cheers
+|   `-- ui.js                      Views, board rendering, and status display
 |-- assets/                        Images, icons, and font
 `-- server/TicTacToeServer1.war   Prebuilt Java servlet game server
 ```
