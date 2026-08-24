@@ -3,7 +3,7 @@ const modal = {
     overlay: byId("modalOverlay"), eyebrow: byId("modalEyebrow"), symbol: byId("modalSymbol"),
     title: byId("modalTitle"), message: byId("modalMessage"), details: byId("modalDetails"), score: byId("modalScore"),
     xScore: byId("modalXScore"), oScore: byId("modalOScore"), primary: byId("modalPrimaryButton"),
-    secondary: byId("modalSecondaryButton"), close: byId("modalCloseButton")
+    secondary: byId("modalSecondaryButton"), close: byId("modalCloseButton"), art: byId("modalArt")
 };
 let modalHandlers = {};
 let toastTimer;
@@ -21,6 +21,7 @@ export function showModal(options) {
     });
     modal.details.hidden = !options.details?.length;
     modal.details.closest(".modal").classList.toggle("modal-instructions", Boolean(options.details?.length));
+    setModalArt(options.art);
     setModalScores(options.scores);
     setButtonContent(modal.primary, options.primaryLabel || "Continue", options.primaryIcon);
     modal.secondary.textContent = options.secondaryLabel || "Back";
@@ -31,6 +32,12 @@ export function showModal(options) {
     document.body.classList.add("modal-open");
     requestAnimationFrame(() => modal.overlay.classList.add("visible"));
     modal.primary.focus();
+}
+
+function setModalArt(source) {
+    modal.art.hidden = !source;
+    if (source) modal.art.src = source;
+    else modal.art.removeAttribute("src");
 }
 
 function setButtonContent(button, label, iconName) {

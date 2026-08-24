@@ -267,6 +267,7 @@ function handleOutcome(result, board) {
         symbol: result.winner,
         title: won ? "You own the grid" : "Your rival takes it",
         message: "Play another round with the same rival, or leave this room", scores: state.scores,
+        art: won ? "" : "assets/lost.png",
         primaryLabel: "Rematch", primaryIcon: "refresh-cw", secondaryLabel: "Exit game", dismissible: false,
         onPrimary: requestRematch, onSecondary: exitGame
     });

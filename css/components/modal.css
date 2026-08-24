@@ -34,8 +34,20 @@
 .modal-overlay.visible .modal {
   transform: none;
 }
+.modal-art {
+  position: absolute;
+  z-index: 2;
+  top: -82px;
+  right: -62px;
+  width: clamp(145px, 18vw, 190px);
+  height: auto;
+  pointer-events: none;
+  filter: drop-shadow(8px 10px 0 rgba(0, 0, 0, .45));
+  transform: rotate(7deg);
+}
 .modal-close {
   position: absolute;
+  z-index: 3;
   display: grid;
   place-items: center;
   top: 12px;
@@ -162,6 +174,11 @@
 }
 @media (max-width: 600px), (max-height: 680px) {
   .modal { padding: 24px; }
+  .modal-art {
+    top: -48px;
+    right: -16px;
+    width: 120px;
+  }
   .modal-heading {
     grid-template-columns: 58px minmax(0, 1fr);
     gap: 15px;

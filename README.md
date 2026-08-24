@@ -240,7 +240,7 @@ To fully satisfy the requirement that the **system enforce** correct turn order 
 
 ## Game asset resources
 
-Thank you to the following resources and communities for the Persona 5 UI and game asset inspiration:
+Thank you to the following resources and communities for the Persona 5 Royal UI and game assets:
 
 - [Game UI Database](https://www.gameuidatabase.com/gameData.php?id=72)
 - [Persona 5 Rainmeter theme assets](https://www.reddit.com/r/Rainmeter/comments/c88qw8/persona_5_rainmeter_theme_assets_posted_in/?solution=e60418052a25e9bfe60418052a25e9bf&js_challenge=1&token=7afd7253fec22262ff1c52b1703fe9ecaa080a584e3b6087eb5769d73cd5bc42&jsc_orig_r=)
@@ -248,3 +248,5 @@ Thank you to the following resources and communities for the Persona 5 UI and ga
 - [Persona 5 Royal press screenshots](https://press.kochmedia.com/Persona-5-Royal#?tab=Screenshots-1&scrollto=)
 - [Persona 5 UI assets on Pinterest](https://www.pinterest.com/ideas/persona-5-ui-assets/899969743337/)
 - [Persona 5 Royal sprites](https://www.spriters-resource.com/playstation_4/persona5royal/)
+
+And of course, thank you to Atlus and SEGA for creating Persona 5 Royal.
