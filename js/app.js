@@ -119,7 +119,7 @@ async function enterRoom(intent) {
             if (intent === "create") toast("That key existed, so you joined as O.");
         }
     } catch (error) {
-        handleError(error, "We couldn't enter that game.");
+        handleError(error, "We couldn't enter that game");
     } finally {
         setBusy(false);
     }

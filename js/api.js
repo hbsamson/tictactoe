@@ -17,7 +17,7 @@ async function request(endpoint, params) {
     try {
         response = await fetch(url, { headers: { Accept: "text/plain" } });
     } catch {
-        throw new ApiError("The game server could not be reached.");
+        throw new ApiError("The game server could not be reached. Kindly ensure that the game server is running and accessible.", 0);
     }
 
     const body = (await response.text()).trim();
