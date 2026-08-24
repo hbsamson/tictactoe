@@ -265,9 +265,9 @@ function handleOutcome(result, board) {
     showModal({
         eyebrow: won ? "Victory" : "Defeat",
         symbol: result.winner,
-        title: won ? "You own the grid" : "Your rival takes it",
+        title: won ? "You now own the grid" : "Your rival takes it",
         message: "Play another round with the same rival, or leave this room", scores: state.scores,
-        art: won ? "" : "assets/lost.png",
+        art: won ? "assets/victory.png" : "assets/lost.png",
         primaryLabel: "Rematch", primaryIcon: "refresh-cw", secondaryLabel: "Exit game", dismissible: false,
         onPrimary: requestRematch, onSecondary: exitGame
     });
