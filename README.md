@@ -237,3 +237,14 @@ To fully satisfy the requirement that the **system enforce** correct turn order 
 - Player profiles, reactions, and optional scores use browser `localStorage`; only board state is synchronized by the WAR across different devices.
 - The frontend loads Lucide icons from a CDN. The game remains usable if the CDN is unavailable, but icons may not render.
 - Payara 5.2022.5 Community is end-of-life. Keep this setup isolated for the Java 8 assignment rather than exposing it as an internet-facing production service.
+
+## Game asset resources
+
+Thank you to the following resources and communities for the Persona 5 UI and game asset inspiration:
+
+- [Game UI Database](https://www.gameuidatabase.com/gameData.php?id=72)
+- [Persona 5 Rainmeter theme assets](https://www.reddit.com/r/Rainmeter/comments/c88qw8/persona_5_rainmeter_theme_assets_posted_in/?solution=e60418052a25e9bfe60418052a25e9bf&js_challenge=1&token=7afd7253fec22262ff1c52b1703fe9ecaa080a584e3b6087eb5769d73cd5bc42&jsc_orig_r=)
+- [Persona 5 menu art assets](https://www.reddit.com/r/Persona5/comments/6uu246/persona_5s_menu_art_assets/)
+- [Persona 5 Royal press screenshots](https://press.kochmedia.com/Persona-5-Royal#?tab=Screenshots-1&scrollto=)
+- [Persona 5 UI assets on Pinterest](https://www.pinterest.com/ideas/persona-5-ui-assets/899969743337/)
+- [Persona 5 Royal sprites](https://www.spriters-resource.com/playstation_4/persona5royal/)
