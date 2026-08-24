@@ -44,7 +44,6 @@
 .game-start-overlay.is-playing .game-start-speedlines {
   animation: cut-in-lines 2.15s ease-out both;
 }
-.game-start-impact { display: none; }
 .game-start-art {
   position: absolute;
   inset: 0;

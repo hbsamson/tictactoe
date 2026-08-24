@@ -66,13 +66,11 @@ modal.primary.addEventListener("click", () => modalHandlers.onPrimary?.());
 modal.secondary.addEventListener("click", () => modalHandlers.onSecondary?.());
 modal.close.addEventListener("click", () => {
     if (modalHandlers.dismissible !== false) {
-        modalHandlers.onDismiss?.();
         closeModal();
     }
 });
 modal.overlay.addEventListener("click", (event) => {
     if (event.target === modal.overlay && modalHandlers.dismissible !== false) {
-        modalHandlers.onDismiss?.();
         closeModal();
     }
 });

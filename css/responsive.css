@@ -59,13 +59,6 @@
   gap: 8px;
   margin-bottom: 6px;
 }
-.game-topbar .eyebrow { display: none; }
-.game-topbar h1 {
-  overflow: hidden;
-  font-size: 16px;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
 .room-actions {
   flex-direction: row;
   gap: 5px;
@@ -129,17 +122,8 @@
   font-size: 10px;
 }
 .turn-message { display: inline-flex; align-items: center; gap: 7px; }
-.you-are-mobile {
-  color: var(--muted);
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-}
-.you-are-mobile strong { color: var(--ink); }
 .board { gap: 5px; padding: 6px; }
 .cell { font-size: clamp(38px, 14vw, 62px); }
-.you-are { display: none; }
 
 .cheer-panel { margin-top: 6px; padding: 7px; }
 .cheer-header { gap: 5px; }
@@ -223,13 +207,6 @@
     gap: 25px;
     margin-bottom: 36px;
   }
-  .game-topbar .eyebrow { display: block; }
-  .game-topbar h1 {
-    overflow: visible;
-    font-size: clamp(30px, 5vw, 56px);
-    white-space: normal;
-    text-overflow: clip;
-  }
   .room-actions { gap: 10px; }
   .room-key { min-height: auto; padding: 10px 13px; }
   .button-ghost { min-height: 49px; padding: 13px 20px; }
@@ -275,10 +252,8 @@
     padding: 0;
     font-size: 12px;
   }
-  .you-are-mobile { display: none; }
   .board { gap: 8px; padding: 11px; }
   .cell { font-size: clamp(48px, 8vw, 84px); }
-  .you-are { display: block; margin-top: 14px; font-size: 11px; }
   .cheer-panel { margin-top: 18px; padding: 18px 16px 14px; }
   .cheer-header { gap: 12px; }
   .cheer-header .eyebrow { display: block; }
@@ -329,7 +304,6 @@
     grid-row: 2;
     width: 100%;
   }
-  .you-are { display: none; }
   .cheer-panel { margin-top: 10px; padding: 10px; }
   .cheer-header {
     grid-template-columns: minmax(0, 1fr);

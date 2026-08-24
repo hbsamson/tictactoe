@@ -197,10 +197,10 @@ async function refreshBoard() {
             if (state.autoRematch && state.autoRematchReady) joinRematch();
             else if (state.autoRematch) {
                 state.autoRematch = false;
-                showOpponentLeftPrompt();
+                disconnectFromClosedRoom();
             } else showGameEndModal();
         }
-        else if (state.view === "playing") showOpponentLeftPrompt();
+        else if (state.view === "playing") disconnectFromClosedRoom();
         return;
     }
     if (boardInfo === GAME_EXITED) {
@@ -263,9 +263,9 @@ function handleOutcome(result, board) {
         return;
     }
     showModal({
-        eyebrow: result.type === "draw" ? "No square left" : won ? "Victory" : "Defeat",
-        symbol: result.type === "draw" ? "XO" : result.winner,
-        title: result.type === "draw" ? "A perfect draw" : won ? "You own the grid" : "Your rival takes it",
+        eyebrow: won ? "Victory" : "Defeat",
+        symbol: result.winner,
+        title: won ? "You own the grid" : "Your rival takes it",
         message: "Play another round with the same rival, or leave this room", scores: state.scores,
         primaryLabel: "Rematch", primaryIcon: "refresh-cw", secondaryLabel: "Exit game", dismissible: false,
         onPrimary: requestRematch, onSecondary: exitGame
@@ -374,10 +374,6 @@ async function joinRematch() {
     } catch (error) {
         handleError(error, "The rematch could not be joined.");
     }
-}
-
-function showOpponentLeftPrompt() {
-    disconnectFromClosedRoom();
 }
 
 function disconnectFromClosedRoom() {

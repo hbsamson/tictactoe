@@ -22,18 +22,6 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
-.brand-mark {
-  display: grid;
-  place-items: center;
-  width: 43px;
-  aspect-ratio: 1;
-  background: var(--red);
-  box-shadow: 7px 7px 0 var(--red-dark);
-  font-weight: 950;
-  letter-spacing: -0.15em;
-  transform: rotate(-3deg);
-}
-
 .connection-pill {
   display: inline-flex;
   align-items: center;
