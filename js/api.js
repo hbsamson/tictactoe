@@ -1,5 +1,8 @@
-const DEFAULT_API_BASE = "http://localhost:8080/tictactoe/tictactoeserver";
-const API_BASE = window.TICTACTOE_API_BASE || DEFAULT_API_BASE;
+const BASEGAME_API = "http://localhost:8080/tictactoe/tictactoeserver";
+const WEBSERVICE_API = "http://localhost:8080/tictactoe-webservice/rest";
+
+const BASEGAME_API_BASE = window.TICTACTOE_API_BASE || BASEGAME_API;
+const WEBSERVICE_API_BASE = window.TICTACTOE_WEBSERVICE_API_BASE || WEBSERVICE_API;
 
 export class ApiError extends Error {
     constructor(message, status = 0) {
@@ -10,7 +13,7 @@ export class ApiError extends Error {
 }
 
 async function request(endpoint, params) {
-    const url = new URL(`${API_BASE}/${endpoint}`);
+    const url = new URL(`${BASEGAME_API_BASE}/${endpoint}`);
     Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
 
     let response;
@@ -36,4 +39,39 @@ export const gameApi = {
         url.searchParams.set("key", key);
         return url.toString();
     }
+}
+
+async function webserviceRequest(endpoint, options = {}) {
+    const url = new URL(`${WEBSERVICE_API_BASE}/${endpoint}`);
+
+    let response;
+    try {
+        response = await fetch(url, {
+            method: options.method || "GET",
+            headers: {
+                Accept: "application/json",
+                ...(options.body && {
+                    "Content-Type": "application/json"
+                })
+            },
+            ...(options.body && {
+                body: JSON.stringify(options.body)
+            })
+        });
+    } catch {
+        throw new ApiError("The webservice API could not be reached. Kindly ensure that the webservice API is running and accessible.", 0);
+    }
+
+    const body = (await response.text()).trim();
+    if (!response.ok) { throw new ApiError(body || `Server request failed (${response.status}).`, response.status); }
+    return body;
+}
+
+export const gameRecordApi = {
+    save: (record) => webserviceRequest("game/save", {
+                            method: "POST",
+                            body: record
+                        }),
+    listGames: (playerId) => webserviceRequest(`game/list-games/${playerId}`),
+    getGame: (gameId) => webserviceRequest(`game/${gameId}`)
 };
