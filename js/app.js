@@ -1,11 +1,12 @@
-import { gameApi, ApiError } from "./api.js";
+import { gameApi, gameRecordApi, ApiError } from "./api.js";
 import { CONNECTION_POLL_DELAY, POLL_DELAY } from "./config.js";
 import { BOARD_PENDING, GAME_EXITED, EMPTY_BOARD, currentTurn, parseBoard, resultFor } from "./game.js";
 import { changeAvatar, generateKey, getLobbyProfile, isValidKey } from "./lobby.js";
 import { closeModal, setModalMessage, setModalScores, showModal, toast } from "./notifications.js";
 import {
+    createRoundGameId,
     cheerFromStorageEvent, isPlayerProfilesEvent, isScoresEvent, publishCheer, publishSharedKey,
-    readPlayerProfiles, readStoredScores, savePlayerProfile, savePlayerProfiles, saveStoredScores,
+    readPlayerProfiles, readRoundGameId, readStoredScores, savePlayerProfile, savePlayerProfiles, saveStoredScores,
     sharedKeyFromStorageEvent
 } from "./room-storage.js";
 import { elements,
@@ -15,6 +16,7 @@ import { elements,
 
 const state = {
     key: "", 
+    gameId: "",
     tile: "", 
     board: [...EMPTY_BOARD], 
     turn: "X", 
@@ -53,7 +55,7 @@ async function pollConnectionStatus() {
 
 function validateKey(key) {
     if (!isValidKey(key)) {
-        setKeyError("Invalid key pattern. Enter 3-6 alphanumeric characters (letters and numbers only)");
+        setKeyError("Invalid room ID. Use a UUID such as 123e4567-e89b-12d3-a456-426614174000.");
         elements.keyInput.focus();
         return false;
     }
@@ -121,10 +123,12 @@ async function enterRoom(intent) {
 
 function beginSession(key, tile) {
     stopPolling();
-    const profile = getLobbyProfile(elements);
-    savePlayerProfile(key, tile, profile);
+    const lobbyProfile = getLobbyProfile(elements);
+    savePlayerProfile(key, tile, lobbyProfile);
     const players = readPlayerProfiles(key);
-    Object.assign(state, { key, tile, board: [...EMPTY_BOARD], turn: "X", view: "waiting", scores: readStoredScores(key), outcomeId: "", leaving: false, spectator: false, spectatorExitSince: null, profile, players, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
+    const profile = players[tile] || lobbyProfile;
+    const gameId = tile === "X" ? createRoundGameId(key) : readRoundGameId(key) || createRoundGameId(key);
+    Object.assign(state, { key, gameId, tile, board: [...EMPTY_BOARD], turn: "X", view: "waiting", scores: readStoredScores(key), outcomeId: "", leaving: false, spectator: false, spectatorExitSince: null, profile, players, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
     setRoom(key, tile, false, players);
     setScores(state.scores);
     renderBoard(state.board, { ...state, spectator: false });
@@ -135,7 +139,7 @@ function beginSpectatorSession(key, board) {
     const parsedBoard = [...board];
     const profile = getLobbyProfile(elements);
     const players = readPlayerProfiles(key);
-    Object.assign(state, { key, tile: "", board: parsedBoard, turn: currentTurn(parsedBoard), view: "spectating", scores: readStoredScores(key), outcomeId: "", leaving: false, spectator: true, spectatorExitSince: null, profile, players, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
+    Object.assign(state, { key, gameId: readRoundGameId(key), tile: "", board: parsedBoard, turn: currentTurn(parsedBoard), view: "spectating", scores: readStoredScores(key), outcomeId: "", leaving: false, spectator: true, spectatorExitSince: null, profile, players, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
     setRoom(key, "", true, players);
     setScores(state.scores);
     renderBoard(parsedBoard, { ...state, spectator: true, finished: Boolean(resultFor(parsedBoard)) });
@@ -153,6 +157,38 @@ function schedulePoll(delay = POLL_DELAY) {
 function stopPolling() {
     window.clearTimeout(state.pollTimer);
     state.pollTimer = null;
+}
+
+function formatDateSaved(date = new Date()) {
+    const pad = (value) => String(value).padStart(2, "0");
+    return [
+        date.getFullYear(),
+        pad(date.getMonth() + 1),
+        pad(date.getDate())
+    ].join("-") + " " + [
+        pad(date.getHours()),
+        pad(date.getMinutes()),
+        pad(date.getSeconds())
+    ].join(":");
+}
+
+function buildMoveSaveRecord(location) {
+    return {
+        gameId: state.gameId,
+        playerId: state.profile?.id || "",
+        symbol: state.tile,
+        location: String(location),
+        dateSaved: formatDateSaved()
+    };
+}
+
+async function saveMoveSnapshot(location) {
+    if (!state.key || !state.gameId || !state.profile?.id || state.spectator) return;
+    try {
+        await gameRecordApi.save(buildMoveSaveRecord(location));
+    } catch (error) {
+        console.warn("Unable to save game move.", error);
+    }
 }
 
 async function pollServer() {
@@ -311,10 +347,12 @@ async function requestRematch() {
     stopPolling();
     try {
         await gameApi.reset(state.key);
+        const gameId = createRoundGameId(state.key);
         const tile = (await gameApi.create(state.key)).toUpperCase();
-        Object.assign(state, { tile, board: [...EMPTY_BOARD], turn: "X", view: "waiting", outcomeId: "", movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: true });
+        Object.assign(state, { gameId, tile, board: [...EMPTY_BOARD], turn: "X", view: "waiting", outcomeId: "", movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: true });
         savePlayerProfile(state.key, tile, state.profile);
         state.players = readPlayerProfiles(state.key);
+        state.profile = state.players[tile] || state.profile;
         setRoom(state.key, tile, false, state.players);
         renderBoard(state.board, state);
         showView("waiting");
@@ -347,9 +385,11 @@ async function joinRematch() {
         if (tile === "X") {
             if (state.autoRematch) {
                 closeModal();
-                Object.assign(state, { tile: "X", board: [...EMPTY_BOARD], turn: "X", view: "waiting", outcomeId: "", leaving: false, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: true });
+                const gameId = createRoundGameId(state.key);
+                Object.assign(state, { gameId, tile: "X", board: [...EMPTY_BOARD], turn: "X", view: "waiting", outcomeId: "", leaving: false, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: true });
                 savePlayerProfile(state.key, state.tile, state.profile);
                 state.players = readPlayerProfiles(state.key);
+                state.profile = state.players[state.tile] || state.profile;
                 setRoom(state.key, state.tile, false, state.players);
                 renderBoard(state.board, state);
                 showView("waiting");
@@ -364,9 +404,11 @@ async function joinRematch() {
             return;
         }
         closeModal();
-        Object.assign(state, { tile: "O", board: [...EMPTY_BOARD], turn: "X", view: "playing", outcomeId: "", leaving: false, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: true });
+        const gameId = readRoundGameId(state.key) || createRoundGameId(state.key);
+        Object.assign(state, { gameId, tile: "O", board: [...EMPTY_BOARD], turn: "X", view: "playing", outcomeId: "", leaving: false, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: true });
         savePlayerProfile(state.key, state.tile, state.profile);
         state.players = readPlayerProfiles(state.key);
+        state.profile = state.players[state.tile] || state.profile;
         setRoom(state.key, state.tile, false, state.players);
         renderBoard(state.board, state);
         showView("game");
@@ -425,6 +467,7 @@ async function playCell(cell) {
     try {
         await gameApi.move(state.key, state.tile, Number(cell.dataset.x), Number(cell.dataset.y));
         moveSubmitted = true;
+        void saveMoveSnapshot(index);
         await refreshBoard();
     } catch (error) {
         if (!moveSubmitted) {
@@ -472,7 +515,7 @@ async function exitGame() {
 function returnToLobby() {
     clearDrawRematchTimer();
     stopPolling();
-    Object.assign(state, { key: "", tile: "", board: [...EMPTY_BOARD], turn: "X", view: "lobby", outcomeId: "", leaving: false, spectator: false, spectatorExitSince: null, profile: null, players: {}, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
+    Object.assign(state, { key: "", gameId: "", tile: "", board: [...EMPTY_BOARD], turn: "X", view: "lobby", outcomeId: "", leaving: false, spectator: false, spectatorExitSince: null, profile: null, players: {}, movePending: false, pendingIndex: null, autoRematch: false, autoRematchReady: false, skipGameStart: false });
     elements.keyInput.value = generateKey();
     setKeyError();
     showView("lobby");
@@ -480,22 +523,22 @@ function returnToLobby() {
 
 async function copyKey() {
     try { 
-        await navigator.clipboard.writeText(state.key); toast("Game key copied!"); 
+        await navigator.clipboard.writeText(state.key); toast("Room ID copied!"); 
     } catch { 
-        toast(`Game key: ${state.key}`); 
+        toast(`Room ID: ${state.key}`); 
     }
 }
 
 async function copyLobbyKey() {
-    const key = elements.keyInput.value.trim().toUpperCase();
+    const key = elements.keyInput.value.trim();
     if (!validateKey(key)) return;
     elements.keyInput.value = key;
     try { publishSharedKey(key); } catch {}
     try {
         await navigator.clipboard.writeText(key);
-        toast("Game key copied!");
+        toast("Room ID copied!");
     } catch {
-        toast(`Game key: ${key}`);
+        toast(`Room ID: ${key}`);
     }
 }
 
@@ -504,7 +547,7 @@ function hydrateSharedKey(event) {
     if (state.view !== "lobby" || !key) return;
     elements.keyInput.value = key;
     setKeyError();
-    toast("Game key received.");
+    toast("Room ID received.");
 }
 
 function handleError(error, fallback, modalError = true) {

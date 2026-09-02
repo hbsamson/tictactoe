@@ -67,11 +67,29 @@ async function webserviceRequest(endpoint, options = {}) {
     return body;
 }
 
+async function saveRecord(record) {
+    const url = new URL(`${WEBSERVICE_API_BASE}/game/save`);
+
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(record)
+        });
+        const body = (await response.text()).trim();
+        if (!response.ok) throw new ApiError(body || `Server request failed (${response.status}).`, response.status);
+        return body;
+    } catch (error) {
+        if (error instanceof ApiError) throw error;
+        throw new ApiError("The webservice API could not be reached. Kindly ensure that the webservice API is running and accessible.", 0);
+    }
+}
+
 export const gameRecordApi = {
-    save: (record) => webserviceRequest("game/save", {
-                            method: "POST",
-                            body: record
-                        }),
+    save: saveRecord,
     listGames: (playerId) => webserviceRequest(`game/list-games/${playerId}`),
     getGame: (gameId) => webserviceRequest(`game/${gameId}`)
 };

@@ -38,13 +38,13 @@
                     <div><p class="eyebrow">Local match</p><h2>Start the showdown</h2></div>
                     <span class="mini-grid" aria-hidden="true">×○<br>○×</span>
                 </div>
-                <label for="gameKey">Game key <span class="required-mark" aria-hidden="true">*</span></label>
+                <label for="gameKey">Room ID <span class="required-mark" aria-hidden="true">*</span></label>
                 <div class="key-field">
-                    <input id="gameKey" name="gameKey" type="text" minlength="4" maxlength="6" autocomplete="off" spellcheck="false" placeholder="e.g. HANNAH" pattern="[A-Za-z0-9]{4,6}" required>
-                    <button id="generateKeyButton" class="icon-button" type="button" aria-label="Generate a new key" title="Generate key"><i data-lucide="refresh-cw">↻</i></button>
-                    <button id="copyLobbyKeyButton" class="icon-button" type="button" aria-label="Copy game key" title="Copy key"><i data-lucide="copy"></i></button>
+                    <input id="gameKey" name="gameKey" type="text" minlength="36" maxlength="36" autocomplete="off" spellcheck="false" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" pattern="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}" required>
+                    <button id="generateKeyButton" class="icon-button" type="button" aria-label="Generate a new room ID" title="Generate room ID"><i data-lucide="refresh-cw">↻</i></button>
+                    <button id="copyLobbyKeyButton" class="icon-button" type="button" aria-label="Copy room ID" title="Copy room ID"><i data-lucide="copy"></i></button>
                 </div>
-                <p id="keyHint" class="field-hint">For custom keys, use 4-6 alphanumeric characters (letters and numbers only)</p>
+                <p id="keyHint" class="field-hint">Use the generated room UUID, or paste one shared by another player.</p>
                 <div class="identity-fields">
                     <div class="avatar-picker">
                         <button id="previousAvatarButton" class="avatar-step avatar-step-previous" type="button" aria-label="Previous icon"><i data-lucide="chevron-left"></i></button>
@@ -70,8 +70,8 @@
                 <span class="radar" aria-hidden="true"><i></i></span>
                 <p class="eyebrow">Room created</p>
                 <h1 id="waitingTitle">Waiting for your rival</h1>
-                <p>Share this game key with the second player</p>
-                <button id="copyWaitingKey" class="room-key room-key-large" type="button" aria-label="Copy game key"><span id="waitingKey"></span><small><i data-lucide="copy"></i> Copy</small></button>
+                <p>Share this room ID with the second player</p>
+                <button id="copyWaitingKey" class="room-key room-key-large" type="button" aria-label="Copy room ID"><span id="waitingKey"></span><small><i data-lucide="copy"></i> Copy</small></button>
                 <p id="waitingStatus" class="waiting-status" aria-live="polite">Checking for player two…</p>
                 <button id="cancelWaitingButton" class="text-button" type="button"><i data-lucide="x"></i> Cancel room</button>
             </div>
@@ -81,7 +81,7 @@
             <div class="game-topbar">
                 <div class="match-mode"><strong id="gameModeLabel" class="game-mode-label">Live match</strong><span id="spectatorBadge" class="spectator-badge" hidden>Spectator · reactions only</span></div>
                 <div class="room-actions">
-                    <button id="copyGameKey" class="room-key" type="button" aria-label="Copy game key">Room <strong id="activeGameKey"></strong><small><i data-lucide="copy"></i> Copy</small></button>
+                    <button id="copyGameKey" class="room-key" type="button" aria-label="Copy room ID">Room <strong id="activeGameKey"></strong><small><i data-lucide="copy"></i> Copy</small></button>
                     <button id="exitButton" class="button button-ghost" type="button"><i data-lucide="log-out"></i> Exit</button>
                 </div>
             </div>

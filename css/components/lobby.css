@@ -146,10 +146,10 @@
   padding: 17px 18px;
   color: var(--ink);
   background: transparent;
-  font-size: 18px;
+  font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
+  font-size: 13px;
   font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0;
   outline: 0;
 }
 .key-field input::placeholder {

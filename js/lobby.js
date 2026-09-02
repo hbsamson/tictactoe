@@ -1,7 +1,7 @@
 import { KEY_PATTERN, PLAYER_AVATARS } from "./config.js";
 
 export function generateKey() {
-    return crypto.randomUUID().slice(0, 6).toUpperCase();
+    return crypto.randomUUID();
 }
 
 export function isValidKey(key) {

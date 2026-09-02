@@ -70,6 +70,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 9px;
   border: 1px solid var(--line);
   padding: 10px 13px;
@@ -83,7 +84,10 @@
 .room-key strong,
 .room-key span {
   color: var(--ink);
-  letter-spacing: 0.12em;
+  font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
+  letter-spacing: 0;
+  text-transform: none;
+  overflow-wrap: anywhere;
 }
 .room-key small {
   display: inline-flex;
@@ -103,9 +107,10 @@
 }
 .room-key-large {
   justify-content: center;
-  min-width: 220px;
+  max-width: 100%;
+  min-width: min(220px, 100%);
   margin: 22px 0 6px;
   padding: 16px 20px;
-  font-size: 20px;
+  font-size: 13px;
   font-weight: 900;
 }
