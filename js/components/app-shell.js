@@ -16,6 +16,7 @@ export class AppShell extends BaseComponent {
         this.brandText = document.createElement("span");
         this.brandStrong = document.createElement("strong");
         this.connection = document.createElement("span");
+        this.historyLink = document.createElement("a");
         this.lobbyView = new LobbyView();
         this.waitingView = new WaitingView();
         this.gameView = new GameView();
@@ -42,12 +43,17 @@ export class AppShell extends BaseComponent {
         this.connection.className = "connection-pill";
         this.connection.dataset.state = "busy";
         this.connection.textContent = "Checking server...";
+        this.historyLink.href = "history";
+        this.historyLink.className = "history-link";
+        this.historyLink.textContent = "History";
     }
 
     appendElements() {
         this.container.append(this.backdrop, this.shell, this.gameStartOverlay.container, this.modalOverlay.container, this.toast.container);
         this.shell.append(this.brandBar, this.lobbyView.container, this.waitingView.container, this.gameView.container);
-        this.brandBar.append(this.brandLink, document.createElement("span"), this.connection);
+        const spacer = document.createElement("span");
+        spacer.className = "brand-spacer";
+        this.brandBar.append(this.brandLink, spacer, this.historyLink, this.connection);
         this.brandLink.append(this.brandText, this.brandStrong);
     }
 
