@@ -1,14 +1,19 @@
+import { AppShell } from "./components/app-shell.js";
+
+const app = new AppShell();
+app.render("app");
+
 const byId = (id) => document.getElementById(id);
-window.lucide?.createIcons();
-const views = { 
-    lobby: byId("lobbyView"), 
-    waiting: byId("waitingView"), 
-    game: byId("gameView") 
+const views = {
+    lobby: app.lobbyView.container,
+    waiting: app.waitingView.container,
+    game: app.gameView.container
 };
-const cells = [...document.querySelectorAll(".cell")];
+const cells = app.gameView.cells;
 let gameStartTimer;
 
 export const elements = {
+    connectionStatus: byId("connectionStatus"),
     lobbyForm: byId("lobbyForm"), keyInput: byId("gameKey"), keyHint: byId("keyHint"),
     playerName: byId("playerName"), playerAvatar: byId("playerAvatar"), avatarPreview: byId("playerAvatarPreview"), previousAvatar: byId("previousAvatarButton"), nextAvatar: byId("nextAvatarButton"), howToPlay: byId("howToPlayButton"),
     generateKey: byId("generateKeyButton"), copyLobbyKey: byId("copyLobbyKeyButton"), create: byId("createButton"), join: byId("joinButton"),
@@ -16,16 +21,33 @@ export const elements = {
     copyWaitingKey: byId("copyWaitingKey"), cancelWaiting: byId("cancelWaitingButton"),
     activeGameKey: byId("activeGameKey"), copyGameKey: byId("copyGameKey"), exit: byId("exitButton"),
     board: byId("board"), cells,
-    cheerButtons: [...document.querySelectorAll(".cheer-button")]
+    cheerButtons: [...app.gameView.cheerButtons]
 };
+
+elements.gameStartOverlay = byId("gameStartOverlay");
+elements.gameStartRole = byId("gameStartRole");
+elements.modalOverlay = byId("modalOverlay");
+elements.modalEyebrow = byId("modalEyebrow");
+elements.modalSymbol = byId("modalSymbol");
+elements.modalTitle = byId("modalTitle");
+elements.modalMessage = byId("modalMessage");
+elements.modalDetails = byId("modalDetails");
+elements.modalScore = byId("modalScore");
+elements.modalXScore = byId("modalXScore");
+elements.modalOScore = byId("modalOScore");
+elements.modalPrimaryButton = byId("modalPrimaryButton");
+elements.modalSecondaryButton = byId("modalSecondaryButton");
+elements.modalCloseButton = byId("modalCloseButton");
+elements.modalArt = byId("modalArt");
+elements.toast = byId("toast");
 
 export function showView(name) {
     Object.entries(views).forEach(([viewName, view]) => { view.hidden = viewName !== name; });
 }
 
 export function playGameStart(tile) {
-    const overlay = byId("gameStartOverlay");
-    const role = byId("gameStartRole");
+    const overlay = elements.gameStartOverlay;
+    const role = elements.gameStartRole;
     const duration = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 650 : 2200;
 
     window.clearTimeout(gameStartTimer);
@@ -54,7 +76,7 @@ export function setBusy(busy) {
     elements.playerName.disabled = busy;
     elements.previousAvatar.disabled = busy;
     elements.nextAvatar.disabled = busy;
-    const connection = byId("connectionStatus");
+    const connection = elements.connectionStatus;
     if (busy) {
         connection.textContent = "Connecting…";
         connection.dataset.state = "busy";

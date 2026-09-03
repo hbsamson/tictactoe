@@ -33,3 +33,4 @@ export function resultFor(board) {
     }
     return board.every(Boolean) ? { type: "draw", winner: null, line: [] } : null;
 }
+

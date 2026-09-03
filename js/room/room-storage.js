@@ -1,4 +1,4 @@
-import { KEY_PATTERN, PLAYER_AVATARS } from "./config.js";
+import { KEY_PATTERN, PLAYER_AVATARS } from "../config.js";
 
 const CHEER_STORAGE_PREFIX = "tictactoe:cheers:";
 const SCORE_STORAGE_PREFIX = "tictactoe:scores:";
@@ -110,3 +110,4 @@ export function createRoundGameId(roomKey) {
     saveRoundGameId(roomKey, gameId);
     return gameId;
 }
+

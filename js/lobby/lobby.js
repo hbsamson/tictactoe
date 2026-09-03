@@ -1,4 +1,4 @@
-import { KEY_PATTERN, PLAYER_AVATARS } from "./config.js";
+import { KEY_PATTERN, PLAYER_AVATARS } from "../config.js";
 
 export function generateKey() {
     return crypto.randomUUID();
@@ -27,3 +27,4 @@ export function changeAvatar(elements, direction) {
     elements.avatarPreview.alt = name;
     if (!enteredName || enteredName === previousName) elements.playerName.value = name;
 }
+

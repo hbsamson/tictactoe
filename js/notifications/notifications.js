@@ -1,9 +1,10 @@
-const byId = (id) => document.getElementById(id);
+import { elements } from "../ui.js";
+
 const modal = {
-    overlay: byId("modalOverlay"), eyebrow: byId("modalEyebrow"), symbol: byId("modalSymbol"),
-    title: byId("modalTitle"), message: byId("modalMessage"), details: byId("modalDetails"), score: byId("modalScore"),
-    xScore: byId("modalXScore"), oScore: byId("modalOScore"), primary: byId("modalPrimaryButton"),
-    secondary: byId("modalSecondaryButton"), close: byId("modalCloseButton"), art: byId("modalArt")
+    overlay: elements.modalOverlay, eyebrow: elements.modalEyebrow, symbol: elements.modalSymbol,
+    title: elements.modalTitle, message: elements.modalMessage, details: elements.modalDetails, score: elements.modalScore,
+    xScore: elements.modalXScore, oScore: elements.modalOScore, primary: elements.modalPrimaryButton,
+    secondary: elements.modalSecondaryButton, close: elements.modalCloseButton, art: elements.modalArt
 };
 let modalHandlers = {};
 let toastTimer;
@@ -83,7 +84,7 @@ modal.overlay.addEventListener("click", (event) => {
 });
 
 export function toast(message, options = {}) {
-    const element = byId("toast");
+    const element = elements.toast;
     window.clearTimeout(toastTimer);
     const type = options.type === "chat" ? "chat" : "system";
     const side = options.side === "right" ? "right" : "left";

@@ -35,7 +35,7 @@ export const gameApi = {
     move: (key, tile, x, y) => request("move", { key, tile, y, x }),
     reset: (key) => request("reset", { key }),
     resetUrl: (key) => {
-        const url = new URL(`${API_BASE}/reset`);
+        const url = new URL(`${BASEGAME_API_BASE}/reset`);
         url.searchParams.set("key", key);
         return url.toString();
     }
