@@ -7,41 +7,75 @@
 }
 
 .history-card {
-    width: min(900px, 100%);
+    width: min(960px, 100%);
     max-height: 100%;
     min-height: 0;
+
     display: flex;
     flex-direction: column;
+
     padding: clamp(28px, 5vw, 56px);
-    border: 1px solid var(--line);
-    border-radius: 24px;
-    background: rgba(18, 22, 34, 0.88);
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+
+    border: 2px solid rgba(255, 255, 255, 0.18);
+    border-radius: 4px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(25, 25, 32, 0.96),
+            rgba(8, 8, 12, 0.96)
+        );
+
+    box-shadow:
+        10px 10px 0 rgba(0, 0, 0, 0.45),
+        0 24px 80px rgba(0, 0, 0, 0.28);
+
+    clip-path: polygon(
+        0 12px,
+        12px 0,
+        100% 0,
+        100% calc(100% - 12px),
+        calc(100% - 12px) 100%,
+        0 100%
+    );
 }
+
+/* =========================
+   Heading
+   ========================= */
 
 .history-heading h1 {
     margin: 8px 0 10px;
+
     font-size: clamp(34px, 5vw, 64px);
 }
 
 .history-description {
     max-width: 560px;
     margin: 0;
+
     color: var(--muted);
 }
+
+/* =========================
+   Player Search
+   ========================= */
 
 .history-search {
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: end;
+
     gap: 12px;
     margin: 32px 0 18px;
 }
 
 .history-search label {
     grid-column: 1 / -1;
+
     font-size: 12px;
     font-weight: 700;
+
     text-transform: uppercase;
     letter-spacing: 0.12em;
 }
@@ -49,16 +83,35 @@
 .history-search input {
     min-width: 0;
     min-height: 48px;
+
     padding: 0 14px;
+
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: 4px;
+
     color: var(--ink);
     background: rgba(255, 255, 255, 0.06);
+
+    outline: none;
+
+    transition:
+        border-color 120ms ease,
+        background 120ms ease;
 }
+
+.history-search input:focus {
+    border-color: var(--red);
+    background: rgba(255, 59, 48, 0.08);
+}
+
+/* =========================
+   Status
+   ========================= */
 
 .history-status {
     min-height: 22px;
     margin: 0 0 20px;
+
     color: var(--muted);
 }
 
@@ -66,95 +119,48 @@
     color: #f7a3a3;
 }
 
-.history-games {
-    flex: 1 1 auto;
-    display: grid;
-    gap: 14px;
-    min-height: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-gutter: stable;
-    padding-right: 6px;
-    padding-bottom: 8px;
-    scrollbar-color: rgba(103, 213, 255, 0.28) rgba(255, 255, 255, 0.04);
-    scrollbar-width: thin;
-}
-
-.history-games::-webkit-scrollbar {
-    width: 10px;
-}
-
-.history-games::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.04);
-    height: 10px;
-}
-
-.history-games::-webkit-scrollbar-thumb {
-    background: rgba(103, 213, 255, 0.28);
-    border-radius: 999px;
-}
-
-.history-games::-webkit-scrollbar-thumb:hover {
-    background: rgba(103, 213, 255, 0.42);
-}
-
-.history-game {
-    padding: 18px 20px;
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.035);
-}
-
-.history-game-heading {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-}
-
-.history-game-heading h2 {
-    margin: 0;
-    overflow: hidden;
-    font-size: 16px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.history-game-count {
-    flex: 0 0 auto;
-    color: var(--muted);
-    font-size: 12px;
-}
+/* =========================
+   Player Identity
+   ========================= */
 
 .history-identity {
     display: flex;
     align-items: center;
+
     gap: 12px;
     margin: 22px 0 0;
     padding: 12px 14px;
+
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: 4px;
+
     background: rgba(103, 213, 255, 0.07);
 }
 
 .history-identity-avatar {
     flex: 0 0 auto;
+
     width: 44px;
     height: 44px;
-    border-radius: 12px;
+
+    border-radius: 4px;
+
     background: rgba(255, 255, 255, 0.08);
 }
 
 .history-identity-body {
     display: grid;
+
     gap: 2px;
     min-width: 0;
 }
 
 .history-identity-label {
     color: var(--muted);
+
     font-size: 10px;
     font-weight: 800;
+
     letter-spacing: 0.14em;
     text-transform: uppercase;
 }
@@ -165,36 +171,461 @@
 
 .history-identity-id {
     overflow: hidden;
+
     color: var(--muted);
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Consolas,
+        monospace;
+
     font-size: 11px;
+
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.history-game-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px 14px;
-    margin: 6px 0 0;
-    color: var(--muted);
-    font-size: 12px;
+/* =========================
+   Games Container
+   ========================= */
+
+.history-games {
+    flex: 1 1 auto;
+
+    min-height: 0;
+
+    overflow: auto;
+
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+
+    padding: 0 6px 10px 2px;
+
+    scrollbar-color:
+        rgba(255, 59, 48, 0.55)
+        rgba(255, 255, 255, 0.04);
+
+    scrollbar-width: thin;
 }
 
-.history-moves {
-    display: grid;
-    gap: 6px;
-    margin: 14px 0 0;
-    padding-left: 24px;
+.history-games::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.history-games::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.history-games::-webkit-scrollbar-thumb {
+    background: rgba(255, 59, 48, 0.55);
+    border-radius: 999px;
+}
+
+.history-games::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 59, 48, 0.78);
+}
+
+/* =========================
+   Game History Table
+   ========================= */
+
+.history-table {
+    width: 100%;
+    min-width: 640px;
+
+    border: none;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+
+    background: transparent;
+}
+
+/* Table Header */
+
+.history-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+
+    padding: 10px 16px;
+
+    background: #0a0a0e;
+
+    border: none;
+    border-bottom: 3px solid var(--red);
+
+    color: #fff;
+
+    font-size: 12px;
+    font-style: italic;
+    font-weight: 900;
+
+    letter-spacing: 0.12em;
+
+    text-align: left;
+    text-transform: uppercase;
+
+    text-shadow:
+        2px 2px 0 rgba(0, 0, 0, 0.45);
+
+    transform: skewX(-8deg);
+}
+
+.history-table thead th:last-child {
+    text-align: center;
+}
+
+.history-th-text {
+    display: inline-block;
+
+    transform: skewX(8deg);
+}
+
+/* =========================
+   Game Rows
+   ========================= */
+
+.history-game-row {
+    position: relative;
+
+    cursor: pointer;
+
+    transition:
+        transform 160ms ease;
+}
+
+.history-game-row td {
+    position: relative;
+
+    padding: 16px 18px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.07),
+            rgba(255, 255, 255, 0.02)
+        );
+
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+
+    color: var(--ink);
+
+    font-size: 14px;
+
+    vertical-align: middle;
+
+    transition:
+        background 160ms ease,
+        border-color 160ms ease;
+}
+
+.history-game-row td:first-child {
+    border-left: 5px solid transparent;
+
+    clip-path: polygon(
+        10px 0,
+        100% 0,
+        100% 100%,
+        0 100%,
+        0 10px
+    );
+}
+
+.history-game-row td:last-child {
+    border-right: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.history-game-row td + td {
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Hover */
+
+.history-game-row:hover {
+    transform: translateX(8px);
+}
+
+.history-game-row:hover td {
+    background:
+        linear-gradient(
+            90deg,
+            rgba(255, 59, 48, 0.28),
+            rgba(255, 59, 48, 0.08)
+        );
+
+    border-top-color: rgba(255, 59, 48, 0.65);
+    border-bottom-color: rgba(255, 59, 48, 0.45);
+}
+
+.history-game-row:hover td:first-child {
+    border-left-color: var(--red);
+}
+
+/* Active/Open */
+
+.history-game-row.is-open td {
+    background:
+        linear-gradient(
+            90deg,
+            rgba(255, 59, 48, 0.32),
+            rgba(255, 59, 48, 0.12)
+        );
+
+    border-top-color: var(--red);
+    border-bottom-color: var(--red);
+}
+
+.history-game-row.is-open td:first-child {
+    border-left-color: var(--red);
+
+    box-shadow:
+        inset 8px 0 0 var(--red);
+}
+
+/* =========================
+   Game ID
+   ========================= */
+
+.history-game-id {
+    display: inline-block;
+
+    max-width: 260px;
+
+    overflow: hidden;
+
+    color: #fff;
+
+    font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Consolas,
+        monospace;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    letter-spacing: 0.04em;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.history-game-id::before {
+    content: "# ";
+
+    color: var(--red);
+    font-weight: 900;
+}
+
+/* =========================
+   Tile
+   ========================= */
+
+.history-tile {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 38px;
+    height: 38px;
+
+    background: #0a0a0e;
+
+    border: 2px solid var(--yellow);
+
+    color: var(--yellow);
+
+    font-size: 19px;
+    font-style: italic;
+    font-weight: 900;
+
+    transform: skewX(-8deg);
+}
+
+/* =========================
+   Result
+   ========================= */
+
+.history-result {
+    display: inline-block;
+
+    min-width: 72px;
+
+    padding: 5px 14px 6px;
+
+    font-size: 11px;
+    font-style: italic;
+    font-weight: 900;
+
+    letter-spacing: 0.1em;
+
+    text-align: center;
+    text-transform: uppercase;
+
+    transform: skewX(-10deg);
+
+    box-shadow:
+        3px 3px 0 rgba(0, 0, 0, 0.35);
+}
+
+.history-result-win {
+    background: var(--yellow);
+    color: #201200;
+}
+
+.history-result-loss {
+    background: var(--red);
+    color: #fff;
+}
+
+.history-result-draw {
+    background: #24242b;
+
+    border: 2px solid rgba(255, 255, 255, 0.65);
+
+    color: #fff;
+}
+
+.history-result-unknown {
     color: var(--muted);
+}
+
+/* =========================
+   Replay Button
+   ========================= */
+
+.history-replay {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-width: 110px;
+
+    padding: 9px 14px;
+
+    border: 2px solid var(--red);
+
+    background: var(--red);
+    color: #fff;
+
+    cursor: pointer;
+
+    font-size: 11px;
+    font-style: italic;
+    font-weight: 900;
+
+    letter-spacing: 0.08em;
+
+    text-transform: uppercase;
+
+    transform: skewX(-8deg);
+
+    box-shadow:
+        4px 4px 0 rgba(0, 0, 0, 0.45);
+
+    transition:
+        background 120ms ease,
+        color 120ms ease,
+        transform 120ms ease,
+        box-shadow 120ms ease;
+}
+
+.history-replay:hover {
+    background: #fff;
+    color: var(--red);
+
+    transform:
+        skewX(-8deg)
+        translate(-2px, -2px);
+
+    box-shadow:
+        6px 6px 0 rgba(0, 0, 0, 0.5);
+}
+
+.history-replay:active {
+    transform:
+        skewX(-8deg)
+        translate(2px, 2px);
+
+    box-shadow:
+        2px 2px 0 rgba(0, 0, 0, 0.5);
+}
+
+.history-replay:disabled {
+    background: #25252b;
+
+    border-color: #444;
+
+    color: var(--muted);
+
+    cursor: default;
+
+    box-shadow: none;
+}
+
+/* =========================
+   Empty State
+   ========================= */
+
+.history-empty {
+    display: grid;
+
+    gap: 6px;
+
+    padding: 36px 24px;
+
+    border: 2px solid rgba(255, 255, 255, 0.18);
+
+    background:
+        repeating-linear-gradient(
+            -55deg,
+            rgba(255, 59, 48, 0.08) 0 12px,
+            transparent 12px 30px
+        ),
+        #0a0a0e;
+
+    text-align: center;
+}
+
+.history-empty[hidden] {
+    display: none;
+}
+
+.history-empty strong {
+    color: var(--red);
+
+    font-size: 16px;
+    font-style: italic;
+    font-weight: 900;
+
+    letter-spacing: 0.12em;
+}
+
+.history-empty span {
+    color: var(--muted);
+
     font-size: 13px;
 }
 
+/* =========================
+   Misc
+   ========================= */
+
 .history-link {
     color: var(--muted);
+
     font-size: 12px;
     font-weight: 700;
+
     letter-spacing: 0.08em;
+
     text-decoration: none;
     text-transform: uppercase;
 }
@@ -203,12 +634,32 @@
     color: var(--ink);
 }
 
+/* =========================
+   Responsive
+   ========================= */
+
 @media (max-width: 620px) {
+    .history {
+        padding: 32px 4vw 48px;
+    }
+
+    .history-card {
+        padding: 24px 18px;
+    }
+
     .history-search {
         grid-template-columns: 1fr;
     }
 
     .history-search .button {
         width: 100%;
+    }
+
+    .history-games {
+        padding-left: 0;
+    }
+
+    .history-table {
+        min-width: 600px;
     }
 }
