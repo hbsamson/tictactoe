@@ -1,10 +1,12 @@
 import { KEY_PATTERN, PLAYER_AVATARS } from "../config.js";
+import { getTabPlayerId } from "../lobby/lobby.js";
 
 const CHEER_STORAGE_PREFIX = "tictactoe:cheers:";
 const SCORE_STORAGE_PREFIX = "tictactoe:scores:";
 const PLAYER_STORAGE_PREFIX = "tictactoe:players:";
 const ROUND_STORAGE_PREFIX = "tictactoe:round:";
 const SHARED_KEY_STORAGE = "tictactoe:shared-room-key";
+const CURRENT_PLAYER_STORAGE = "tictactoe:current-player";
 
 const cheerStorageKey = (roomKey) => `${CHEER_STORAGE_PREFIX}${roomKey}`;
 const scoreStorageKey = (roomKey) => `${SCORE_STORAGE_PREFIX}${roomKey}`;
@@ -44,7 +46,7 @@ export function readPlayerProfiles(roomKey) {
             return [[tile, {
                 name: player.name.slice(0, 10),
                 avatar: player.avatar,
-                id: KEY_PATTERN.test(player.id) ? player.id : crypto.randomUUID()
+                id: KEY_PATTERN.test(player.id) ? player.id : getTabPlayerId()
             }]];
         }));
     } catch {
@@ -63,7 +65,7 @@ export function savePlayerProfile(roomKey, tile, profile) {
     const existing = readPlayerProfiles(roomKey)[tile];
     savePlayerProfiles(roomKey, {
         ...readPlayerProfiles(roomKey),
-        [tile]: { ...profile, id: profile.id || existing?.id || crypto.randomUUID() }
+        [tile]: { ...profile, id: profile.id || existing?.id || getTabPlayerId() }
     });
 }
 
@@ -109,5 +111,30 @@ export function createRoundGameId(roomKey) {
     const gameId = crypto.randomUUID();
     saveRoundGameId(roomKey, gameId);
     return gameId;
+}
+
+export function storeCurrentPlayer(profile) {
+    if (!profile || !KEY_PATTERN.test(profile.id)) return;
+    try {
+        sessionStorage.setItem(CURRENT_PLAYER_STORAGE, JSON.stringify({
+            id: profile.id,
+            name: typeof profile.name === "string" ? profile.name.slice(0, 10) : "",
+            avatar: PLAYER_AVATARS.includes(profile.avatar) ? profile.avatar : PLAYER_AVATARS[0]
+        }));
+    } catch {}
+}
+
+export function readStoredCurrentPlayer() {
+    try {
+        const profile = JSON.parse(sessionStorage.getItem(CURRENT_PLAYER_STORAGE));
+        if (!profile || !KEY_PATTERN.test(profile.id)) return null;
+        return {
+            id: profile.id,
+            name: typeof profile.name === "string" ? profile.name.slice(0, 10) : "",
+            avatar: PLAYER_AVATARS.includes(profile.avatar) ? profile.avatar : PLAYER_AVATARS[0]
+        };
+    } catch {
+        return null;
+    }
 }
 

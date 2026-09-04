@@ -2,8 +2,8 @@ import { gameApi, gameRecordApi } from "../api.js";
 import {
     createRoundGameId, cheerFromStorageEvent, isPlayerProfilesEvent, isScoresEvent,
     publishCheer, publishSharedKey, readPlayerProfiles, readRoundGameId,
-    readStoredScores, savePlayerProfile, savePlayerProfiles, saveStoredScores,
-    sharedKeyFromStorageEvent
+    readStoredCurrentPlayer, readStoredScores, savePlayerProfile, savePlayerProfiles,
+    saveStoredScores, sharedKeyFromStorageEvent, storeCurrentPlayer
 } from "./room-storage.js";
 
 export class RoomService {
@@ -21,6 +21,8 @@ export class RoomService {
     saveProfiles(key, profiles) { savePlayerProfiles(key, profiles); }
     readScores(key) { return readStoredScores(key); }
     saveScores(key, scores) { saveStoredScores(key, scores); }
+    saveCurrentPlayer(profile) { storeCurrentPlayer(profile); }
+    readCurrentPlayer() { return readStoredCurrentPlayer(); }
     publishCheer(key, entry) { publishCheer(key, entry); }
     cheerFromStorageEvent(event, key) { return cheerFromStorageEvent(event, key); }
     publishSharedKey(key) { publishSharedKey(key); }

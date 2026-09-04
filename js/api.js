@@ -1,5 +1,5 @@
 const BASEGAME_API = "http://localhost:8080/tictactoe/tictactoeserver";
-const WEBSERVICE_API = "http://localhost:8080/tictactoe-webservice/rest";
+const WEBSERVICE_API = "http://localhost:8080/tictactoe-webservice/api";
 
 const BASEGAME_API_BASE = window.TICTACTOE_API_BASE || BASEGAME_API;
 const WEBSERVICE_API_BASE = window.TICTACTOE_WEBSERVICE_API_BASE || WEBSERVICE_API;
@@ -63,8 +63,26 @@ async function webserviceRequest(endpoint, options = {}) {
     }
 
     const body = (await response.text()).trim();
-    if (!response.ok) { throw new ApiError(body || `Server request failed (${response.status}).`, response.status); }
+    if (!response.ok) {
+        throw new ApiError(getWebserviceMessage(body) || `Server request failed (${response.status}).`, response.status);
+    }
+    return parseWebserviceBody(body);
+}
+
+function getWebserviceMessage(body) {
+    if (!body) return "";
+    try {
+        const parsed = JSON.parse(body);
+        if (parsed && (typeof parsed.msg === "string" || typeof parsed.message === "string")) {
+            return parsed.msg || parsed.message;
+        }
+    } catch {}
     return body;
+}
+
+function parseWebserviceBody(body) {
+    if (!body) return null;
+    try { return JSON.parse(body); } catch { return body; }
 }
 
 async function saveRecord(record) {
@@ -80,8 +98,8 @@ async function saveRecord(record) {
             body: JSON.stringify(record)
         });
         const body = (await response.text()).trim();
-        if (!response.ok) throw new ApiError(body || `Server request failed (${response.status}).`, response.status);
-        return body;
+        if (!response.ok) throw new ApiError(getWebserviceMessage(body) || `Server request failed (${response.status}).`, response.status);
+        return parseWebserviceBody(body);
     } catch (error) {
         if (error instanceof ApiError) throw error;
         throw new ApiError("The webservice API could not be reached. Kindly ensure that the webservice API is running and accessible.", 0);
@@ -90,6 +108,7 @@ async function saveRecord(record) {
 
 export const gameRecordApi = {
     save: saveRecord,
-    listGames: (playerId) => webserviceRequest(`listGames/${encodeURIComponent(playerId)}`),
+
+    listGames: (playerId) => webserviceRequest(`player/${encodeURIComponent(playerId)}/games`),
     getGame: (gameId) => webserviceRequest(`game/${gameId}`)
 };

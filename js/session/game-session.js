@@ -39,6 +39,7 @@ export class GameSession {
         this.ui.setRoom(key, tile, false, players);
         this.ui.setScores(this.state.scores);
         this.ui.renderBoard(this.state.board, { ...this.state, spectator: false });
+        this.roomService.saveCurrentPlayer(this.state.profile);
     }
 
     beginSpectator(key, board, stopPolling) {
@@ -96,7 +97,8 @@ export class GameSession {
         try {
             await this.roomService.saveMove({
                 gameId: this.state.gameId, playerId: this.state.profile.id,
-                symbol: this.state.tile, location: String(location), dateSaved
+                playerName: this.state.profile.name, symbol: this.state.tile,
+                location: String(location), dateSaved
             });
         } catch (error) {
             console.warn("Unable to save game move.", error);

@@ -1,11 +1,31 @@
 import { KEY_PATTERN, PLAYER_AVATARS } from "../config.js";
 
+const TAB_PLAYER_ID_KEY = "tictactoe:tab-player-id";
+
 export function generateKey() {
     return crypto.randomUUID();
 }
 
 export function isValidKey(key) {
     return KEY_PATTERN.test(key);
+}
+
+/**
+ * Returns the stable player ID for THIS browser window/tab.
+ * Kept in sessionStorage so it is never shared between windows or browsers,
+ * and is never derived from the player name/avatar — so two different players
+ * with the same name never collide, and each window keeps its own history.
+ */
+export function getTabPlayerId() {
+    try {
+        const stored = sessionStorage.getItem(TAB_PLAYER_ID_KEY);
+        if (KEY_PATTERN.test(stored)) return stored;
+    } catch {}
+    const id = crypto.randomUUID();
+    try {
+        sessionStorage.setItem(TAB_PLAYER_ID_KEY, id);
+    } catch {}
+    return id;
 }
 
 export function getLobbyProfile(elements) {
