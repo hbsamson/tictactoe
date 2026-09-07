@@ -1,7 +1,10 @@
 import { gameRecordApi, ApiError } from "../api.js";
 import { AppShell } from "../components/app-shell.js";
 import { HistoryView } from "../components/history-view.js";
+import { ReplayView } from "../components/replay-view.js";
 import { RoomService } from "../room/room-service.js";
+import { CONNECTION_POLL_DELAY } from "../config.js";
+import { generateKey } from "../lobby/lobby.js";
 
 const HISTORY_PLAYER_KEY = "tictactoe:history-player-id";
 const SHORT_ID_LENGTH = 8;
@@ -16,9 +19,11 @@ class HistoryController {
     constructor() {
         this.app = new AppShell();
         this.history = new HistoryView();
+        this.replay = new ReplayView();
         this.roomService = new RoomService();
         this.app.render("app");
         this.app.shell.append(this.history.container);
+        this.app.shell.append(this.replay.container);
         this.app.lobbyView.container.hidden = true;
         this.app.waitingView.container.hidden = true;
         this.app.gameView.container.hidden = true;
@@ -27,7 +32,42 @@ class HistoryController {
             event.preventDefault();
             this.load(this.history.input.value);
         });
+        this.replay.bind(
+            () => this.closeReplay(),
+            () => this.replay.replay()
+        );
         this.loadFromUrl();
+        this.connectionPaused = false;
+        void this.pollConnection();
+        window.addEventListener("pagehide", () => {
+            this.connectionPaused = true;
+            window.clearTimeout(this.connectionTimer);
+            this.replay.stop();
+        });
+        window.addEventListener("pageshow", (event) => {
+            if (event.persisted) {
+                this.connectionPaused = false;
+                void this.pollConnection();
+            }
+        });
+    }
+
+    async pollConnection() {
+        window.clearTimeout(this.connectionTimer);
+        try {
+            await this.roomService.check(generateKey());
+            this.app.connection.dataset.state = "ready";
+            this.app.connection.textContent = "Server ready";
+        } catch {
+            this.app.connection.dataset.state = "offline";
+            this.app.connection.textContent = "Server offline";
+        } finally {
+            if (!this.connectionPaused) {
+                this.connectionTimer = window.setTimeout(
+                    () => void this.pollConnection(), CONNECTION_POLL_DELAY
+                );
+            }
+        }
     }
 
     showCurrentPlayer() {
@@ -103,6 +143,13 @@ class HistoryController {
 
     async renderGames(items) {
         const entries = items.map((item) => ({ item, ...this.createGameRow(item) }));
+        entries.forEach((entry) => {
+            entry.row.addEventListener("click", () => void this.openReplay(entry));
+            entry.replay.addEventListener("click", (event) => {
+                event.stopPropagation();
+                void this.openReplay(entry);
+            });
+        });
         entries.forEach((entry) => this.history.gamesBody.append(entry.row, entry.detailRow));
         for (const entry of entries) {
             try {
@@ -136,7 +183,7 @@ class HistoryController {
         row.className = "history-game-row";
         idCell.className = "history-game-id";
         idValue.className = "history-game-id-value";
-        idValue.textContent = this.shortId(item.id);
+        idValue.textContent = item.id;
         idValue.title = item.id;
         roomValue.className = "history-room-key";
         roomValue.hidden = !item.roomKey;
@@ -151,7 +198,7 @@ class HistoryController {
         badge.textContent = "...";
         replay.type = "button";
         replay.className = "history-replay";
-        replay.textContent = "Replay Game";
+        replay.textContent = "Watch replay";
         replay.setAttribute("aria-expanded", "false");
         replay.setAttribute("aria-controls", "history-detail-" + item.id);
         resultCell.append(badge);
@@ -178,20 +225,8 @@ class HistoryController {
         detailCell.append(detail);
         detailRow.append(detailCell);
 
-        const toggle = () => {
-            const open = detailRow.hidden;
-            detailRow.hidden = !open;
-            replay.setAttribute("aria-expanded", open ? "true" : "false");
-            row.classList.toggle("is-open", open);
-        };
-        row.addEventListener("click", toggle);
-        replay.addEventListener("click", (event) => {
-            event.stopPropagation();
-            toggle();
-        });
-
         row.append(idCell, tileCell, resultCell, actionCell);
-        return { row, detailRow, tileCell, badge, detailTitle, detailBody, roomValue, item };
+        return { row, detailRow, tileCell, badge, detailTitle, detailBody, roomValue, replay, item };
     }
 
     fillGameRow(entry, moves, playerId) {
@@ -208,6 +243,7 @@ class HistoryController {
             entry.row.title = entry.item.id + " | Room " + roomKey;
         }
         const analysis = this.analyzeGame(sorted, playerId, entry.item.playerName);
+        entry.moves = sorted;
         entry.tileCell.textContent = analysis.tile;
         entry.badge.className = "history-result history-result-" + analysis.outcome;
         entry.badge.textContent = analysis.label;
@@ -233,7 +269,7 @@ class HistoryController {
             symbol.className = "history-tile";
             symbol.textContent = move.symbol || "?";
             location.className = "history-detail-location";
-            location.textContent = String(move.location ?? "?");
+            location.textContent = this.formatLocation(move.location);
             when.textContent = this.formatDateTime(move.dateSaved);
             row.append(num, player, symbol, location, when);
             entry.detailBody.append(row);
@@ -343,8 +379,41 @@ class HistoryController {
         return this.roomService.shortRoomKey(roomKey);
     }
 
+    formatLocation(value) {
+        const locations = [
+            "Top left [1,1]", "Top center [1,2]", "Top right [1,3]",
+            "Middle left [2,1]", "Center [2,2]", "Middle right [2,3]",
+            "Bottom left [3,1]", "Bottom center [3,2]", "Bottom right [3,3]"
+        ];
+        const location = Number(value);
+        return Number.isInteger(location) && locations[location]
+            ? locations[location]
+            : "Unknown position";
+    }
+
     errorMessage(error) {
         return error instanceof ApiError ? error.message : "The saved games could not be loaded.";
+    }
+
+    async openReplay(entry) {
+        let moves = entry.moves;
+        if (!moves) {
+            try {
+                const detail = await gameRecordApi.getGame(entry.item.id);
+                moves = this.parseMoveList(detail);
+                entry.moves = moves;
+            } catch (error) {
+                this.setStatus(this.errorMessage(error), true);
+                return;
+            }
+        }
+        this.history.container.hidden = true;
+        this.replay.show(entry.item, moves);
+    }
+
+    closeReplay() {
+        this.replay.hide();
+        this.history.container.hidden = false;
     }
 
     setStatus(message, isError = false) {
