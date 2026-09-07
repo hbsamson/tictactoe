@@ -122,6 +122,7 @@ export class HistoryView extends BaseComponent {
 
         // Games table
         this.gamesTable.className = "history-table";
+        this.gamesTable.hidden = true;
         this.gamesTable.setAttribute(
             "aria-label",
             "Saved games"
@@ -150,9 +151,10 @@ export class HistoryView extends BaseComponent {
             "history-empty";
 
         this.emptyState.hidden = true;
+        this.emptyState.setAttribute("role", "status");
 
         this.emptyState.innerHTML = `
-            <strong>NO RECORDS FOUND</strong>
+            <strong>No recorded games yet</strong>
             <span>This player has no saved games yet.</span>
         `;
     }
@@ -365,7 +367,7 @@ export class HistoryView extends BaseComponent {
         });
     }
 
-    showEmptyState(message, title = "NO RECORDS FOUND") {
+    showEmptyState(message, title = "No recorded games yet") {
         const heading = this.emptyState.querySelector("strong");
         const body = this.emptyState.querySelector("span");
 
@@ -374,11 +376,13 @@ export class HistoryView extends BaseComponent {
 
         this.gamesTable.hidden = true;
         this.emptyState.hidden = false;
+        this.games.classList.add("history-games-empty");
     }
 
     hideEmptyState() {
         this.gamesTable.hidden = false;
         this.emptyState.hidden = true;
+        this.games.classList.remove("history-games-empty");
     }
 
     showStatus(message, isError = false) {
@@ -397,6 +401,8 @@ export class HistoryView extends BaseComponent {
 
     clearGames() {
         this.gamesBody.innerHTML = "";
-        this.hideEmptyState();
+        this.gamesTable.hidden = true;
+        this.emptyState.hidden = true;
+        this.games.classList.remove("history-games-empty");
     }
 }

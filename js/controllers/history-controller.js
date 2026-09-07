@@ -85,7 +85,6 @@ class HistoryController {
     showCurrentPlayer() {
         const current = this.roomService.readCurrentPlayer();
         if (!current) {
-            this.setStatus("No player profile found in this browser yet. Play a game in this window first, or enter any player ID below.");
             return;
         }
         this.history.showPlayer(current);
@@ -103,7 +102,13 @@ class HistoryController {
         const lastPlayerId = sessionStorage.getItem(HISTORY_PLAYER_KEY) || "";
         const playerId = current?.id || lastPlayerId;
         this.history.input.value = playerId || "";
-        if (playerId) this.load(playerId);
+        if (playerId) {
+            this.load(playerId);
+        } else {
+            this.history.showEmptyState(
+                "Play your first game to start your history, or search for a player ID to view their games."
+            );
+        }
     }
 
     async load(value) {
@@ -122,10 +127,9 @@ class HistoryController {
             const response = await gameRecordApi.listGames(playerId);
             const items = this.parseGameList(response);
             if (!items.length) {
-                this.setStatus("No saved games found for this player.");
+                this.history.clearStatus();
                 this.history.showEmptyState(
-                    "No saved games found for this player.",
-                    "NO SAVED GAMES"
+                    "This player has no saved games yet. Completed games will appear here."
                 );
                 return;
             }

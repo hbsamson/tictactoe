@@ -108,7 +108,6 @@ async function saveRecord(record) {
 
 export const gameRecordApi = {
     save: saveRecord,
-
     listGames: (playerId) => webserviceRequest(`player/${encodeURIComponent(playerId)}/games`),
     getGame: (gameId) => webserviceRequest(`game/${gameId}`)
 };

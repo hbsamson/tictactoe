@@ -240,6 +240,11 @@
     scrollbar-width: thin;
 }
 
+.history-games.history-games-empty {
+    flex: 0 0 auto;
+    overflow: visible;
+}
+
 .history-games::-webkit-scrollbar {
     width: 10px;
     height: 10px;
@@ -632,21 +637,17 @@
 .history-empty {
     display: grid;
 
-    gap: 6px;
+    gap: 8px;
 
-    padding: 36px 24px;
+    width: 100%;
+    margin-top: 0;
+    padding: 24px clamp(28px, 5vw, 44px);
 
-    border: 2px solid rgba(255, 255, 255, 0.18);
+    border: 1px solid var(--line);
 
-    background:
-        repeating-linear-gradient(
-            -55deg,
-            rgba(255, 59, 48, 0.08) 0 12px,
-            transparent 12px 30px
-        ),
-        #0a0a0e;
+    background: rgba(8, 10, 16, 0.35);
 
-    text-align: center;
+    text-align: left;
 }
 
 .history-empty[hidden] {
@@ -654,19 +655,21 @@
 }
 
 .history-empty strong {
-    color: var(--red);
+    color: var(--ink);
 
     font-size: 16px;
-    font-style: italic;
-    font-weight: 900;
+    font-weight: 700;
 
-    letter-spacing: 0.12em;
+    line-height: 1.4;
 }
 
 .history-empty span {
     color: var(--muted);
 
+    max-width: 680px;
+
     font-size: 13px;
+    line-height: 1.6;
 }
 
 /* =========================
@@ -764,6 +767,10 @@
     margin-top: 14px;
     padding: 8px 12px;
     font-size: 10px;
+}
+
+.history-search-toggle + .history-search[hidden] + .history-status:empty + .history-games.history-games-empty {
+    margin-top: 10px;
 }
 .history-search label {
     grid-column: 1 / -1;
