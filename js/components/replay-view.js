@@ -20,10 +20,12 @@ export class ReplayView extends BaseComponent {
         this.eyebrow = document.createElement("p");
         this.title = document.createElement("h1");
         this.subtitle = document.createElement("p");
+        this.playerInfo = document.createElement("div");
         this.backButton = document.createElement("button");
         this.board = document.createElement("div");
         this.cells = Array.from({ length: 9 }, () => document.createElement("div"));
         this.status = document.createElement("p");
+        this.result = document.createElement("p");
         this.replayButton = document.createElement("button");
         this.movesPanel = document.createElement("div");
         this.movesTable = document.createElement("table");
@@ -42,6 +44,7 @@ export class ReplayView extends BaseComponent {
         this.title.id = "replayTitle";
         this.title.textContent = "Watch the showdown";
         this.subtitle.className = "replay-subtitle";
+        this.playerInfo.className = "replay-player-info";
         this.backButton.className = "button button-ghost";
         this.backButton.type = "button";
         this.backButton.textContent = "Back to history";
@@ -52,6 +55,8 @@ export class ReplayView extends BaseComponent {
         });
         this.status.className = "replay-status";
         this.status.setAttribute("aria-live", "polite");
+        this.result.className = "replay-result";
+        this.result.hidden = true;
         this.replayButton.className = "button button-primary replay-action";
         this.replayButton.type = "button";
         this.replayButton.textContent = "Replay animation";
@@ -74,8 +79,10 @@ export class ReplayView extends BaseComponent {
         this.card.append(this.movesPanel);
         this.movesPanel.append(this.movesTable);
         this.movesTable.append(this.movesBody);
+        this.movesPanel.append(this.result);
         this.topbar.append(this.heading, this.backButton);
-        this.heading.append(this.eyebrow, this.title, this.subtitle);
+        this.heading.append(this.eyebrow, this.title);
+        this.topbar.append(this.subtitle, this.playerInfo);
         this.board.append(...this.cells);
     }
 
@@ -92,10 +99,65 @@ export class ReplayView extends BaseComponent {
         );
         this.step = 0;
         this.title.textContent = "Watch the showdown";
-        this.subtitle.textContent = game.roomKey
-            ? `Game ${game.id} | Room ${game.roomKey}`
-            : `Game ${game.id}`;
+        const playerNames = { X: "Unknown player", O: "Unknown player" };
+        this.moves.forEach((move) => {
+            if ((move.symbol === "X" || move.symbol === "O") && move.playerName) {
+                playerNames[move.symbol] = move.playerName;
+            }
+        });
+        const info = [
+            `Game ID ${game.id}`,
+            game.roomKey ? `Room Key ${game.roomKey}` : "Room Key unavailable"
+        ].filter(Boolean);
+        this.subtitle.replaceChildren();
+        info.forEach((line, index) => {
+            const span = document.createElement("span");
+            span.className = "replay-info-line";
+            span.textContent = line;
+            this.subtitle.append(span);
+        });
+        this.playerInfo.replaceChildren();
+        ["X", "O"].forEach((symbol) => {
+            const move = this.moves.find((entry) => entry.symbol === symbol && entry.playerId);
+            const playerCard = document.createElement("div");
+            playerCard.className = "replay-contender";
+            playerCard.dataset.tile = symbol;
+            const tile = document.createElement("span");
+            tile.className = "replay-contender-tile";
+            tile.textContent = symbol;
+            const body = document.createElement("div");
+            body.className = "replay-contender-body";
+            const name = document.createElement("strong");
+            name.textContent = playerNames[symbol];
+            const line = document.createElement("div");
+            const id = document.createElement("small");
+            const copy = document.createElement("button");
+            line.className = "replay-player-info-line";
+            id.textContent = move?.playerId || "Player ID unavailable";
+            copy.type = "button";
+            copy.className = "replay-copy-id";
+            copy.title = `Copy Player ${symbol} ID`;
+            copy.setAttribute("aria-label", `Copy Player ${symbol} ID`);
+            copy.hidden = !move;
+            const feedback = document.createElement("span");
+            feedback.className = "replay-copy-feedback";
+            feedback.setAttribute("role", "status");
+            copy.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+            copy.addEventListener("click", async () => {
+                try {
+                    await navigator.clipboard.writeText(move.playerId);
+                    feedback.textContent = "Copied!";
+                } catch {
+                    feedback.textContent = "Copy unavailable. Select the ID to copy it.";
+                }
+            });
+            line.append(id, copy);
+            body.append(name, line, feedback);
+            playerCard.append(tile, body);
+            this.playerInfo.append(playerCard);
+        });
         this.movesBody.replaceChildren();
+        this.result.hidden = true;
         this.moveRows = this.moves.map((move, index) => {
             const row = document.createElement("tr");
             const date = new Date(move.dateSaved);
@@ -107,43 +169,6 @@ export class ReplayView extends BaseComponent {
                 cell.textContent = String(value);
                 row.append(cell);
             });
-            const playerCell = row.children[1];
-            const name = document.createElement("strong");
-            name.textContent = move.playerName || "Player";
-            playerCell.className = "replay-player";
-            playerCell.replaceChildren(name);
-            const playerId = typeof move.playerId === "string" ? move.playerId : "";
-            const id = document.createElement("small");
-            id.className = "replay-player-id";
-            id.textContent = playerId || "Player ID unavailable";
-            const idLine = document.createElement("div");
-            idLine.className = "replay-player-id-line";
-            idLine.append(id);
-            playerCell.append(idLine);
-            if (playerId) {
-                const copy = document.createElement("button");
-                copy.type = "button";
-                copy.className = "replay-copy-id";
-                copy.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
-                copy.title = "Copy player ID";
-                copy.setAttribute("aria-label", `Copy player ID for ${name.textContent}`);
-                const feedback = document.createElement("span");
-                feedback.className = "replay-copy-feedback";
-                feedback.setAttribute("role", "status");
-                copy.addEventListener("click", async () => {
-                    copy.disabled = true;
-                    try {
-                        await navigator.clipboard.writeText(playerId);
-                        feedback.textContent = "Copied!";
-                    } catch {
-                        feedback.textContent = "Copy unavailable. Select the ID above to copy it.";
-                    } finally {
-                        copy.disabled = false;
-                    }
-                });
-                idLine.append(copy);
-                playerCell.append(feedback);
-            }
             this.movesBody.append(row);
             return row;
         });
@@ -179,6 +204,23 @@ export class ReplayView extends BaseComponent {
             if (active) row.setAttribute("aria-current", "step");
             else row.removeAttribute("aria-current");
         });
+        const currentRow = this.moveRows[this.step - 1];
+        if (currentRow && window.matchMedia("(min-width: 901px)").matches) {
+            const panelBounds = this.movesPanel.getBoundingClientRect();
+            const rowBounds = currentRow.getBoundingClientRect();
+            if (rowBounds.top < panelBounds.top) {
+                this.movesPanel.scrollTop -= panelBounds.top - rowBounds.top;
+            } else if (rowBounds.bottom > panelBounds.bottom) {
+                this.movesPanel.scrollTop += rowBounds.bottom - panelBounds.bottom;
+            }
+        }
+        if (this.step >= this.moves.length) {
+            this.result.hidden = false;
+            this.result.textContent = this.getResult(this.moves);
+            this.movesPanel.scrollTop = this.movesPanel.scrollHeight;
+        } else {
+            this.result.hidden = true;
+        }
         const board = Array.from({ length: 9 }, () => "");
         this.moves.slice(0, this.step).forEach((move) => {
             const location = Number(move.location);
@@ -205,6 +247,24 @@ export class ReplayView extends BaseComponent {
 
     getWinningLine(board) {
         return WIN_LINES.find(([a, b, c]) => board[a] && board[a] === board[b] && board[a] === board[c]) || [];
+    }
+
+    getResult(moves) {
+        const board = Array.from({ length: 9 }, () => "");
+        moves.forEach((move) => {
+            const location = Number(move.location);
+            if ((move.symbol === "X" || move.symbol === "O") && Number.isInteger(location) && location >= 0 && location < 9) {
+                board[location] = move.symbol;
+            }
+        });
+        const winningLine = this.getWinningLine(board);
+        if (winningLine.length) {
+            const winner = board[winningLine[0]];
+            const move = [...moves].reverse().find((entry) => entry.symbol === winner);
+            const name = move?.playerName || "Player";
+            return `Player ${winner} (${name}) wins!`;
+        }
+        return board.every(Boolean) ? "Draw" : "Game Incomplete";
     }
 
     stop() {
