@@ -28,8 +28,12 @@ export class HistoryView extends BaseComponent {
         this.input = document.createElement("input");
         this.submit = document.createElement("button");
         this.searchToggle = document.createElement("button");
+        this.viewToggle = document.createElement("div");
+        this.roomViewButton = document.createElement("button");
+        this.gameViewButton = document.createElement("button");
 
         this.status = document.createElement("p");
+        this.statusBar = document.createElement("div");
 
         this.games = document.createElement("div");
         this.gamesTable = document.createElement("table");
@@ -70,6 +74,15 @@ export class HistoryView extends BaseComponent {
         this.searchToggle.className = "history-search-toggle button button-ghost";
         this.searchToggle.type = "button";
         this.searchToggle.textContent = "Search another player";
+        this.viewToggle.className = "history-view-toggle";
+        this.roomViewButton.type = "button";
+        this.roomViewButton.className = "button button-ghost is-active";
+        this.roomViewButton.textContent = "By room";
+        this.roomViewButton.dataset.view = "room";
+        this.gameViewButton.type = "button";
+        this.gameViewButton.className = "button button-ghost";
+        this.gameViewButton.textContent = "By game";
+        this.gameViewButton.dataset.view = "game";
         this.label.setAttribute("for", "historyPlayerId");
         this.label.textContent = "Search another player ID";
         this.input.id = "historyPlayerId";
@@ -116,6 +129,7 @@ export class HistoryView extends BaseComponent {
             "aria-live",
             "polite"
         );
+        this.statusBar.className = "history-status-bar";
 
         // Games section
         this.games.className = "history-games";
@@ -167,8 +181,9 @@ export class HistoryView extends BaseComponent {
             this.heading,
             this.identity,
             this.searchToggle,
+            this.viewToggle,
             this.form,
-            this.status,
+            this.statusBar,
             this.games
         );
 
@@ -178,6 +193,8 @@ export class HistoryView extends BaseComponent {
             this.title,
             this.description
         );
+        this.viewToggle.append(this.roomViewButton, this.gameViewButton);
+        this.statusBar.append(this.status, this.viewToggle);
 
         // Player identity
         this.identity.append(
@@ -404,5 +421,11 @@ export class HistoryView extends BaseComponent {
         this.gamesTable.hidden = true;
         this.emptyState.hidden = true;
         this.games.classList.remove("history-games-empty");
+    }
+
+    setHistoryView(view) {
+        const room = view === "room";
+        this.roomViewButton.classList.toggle("is-active", room);
+        this.gameViewButton.classList.toggle("is-active", !room);
     }
 }

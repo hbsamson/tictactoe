@@ -1,4 +1,4 @@
-import { gameRecordApi, ApiError } from "../api.js";
+import { gameRecordApi, roomRecordApi, ApiError } from "../api.js";
 import { AppShell } from "../components/app-shell.js";
 import { HistoryView } from "../components/history-view.js";
 import { ReplayView } from "../components/replay-view.js";
@@ -21,6 +21,7 @@ class HistoryController {
         this.history = new HistoryView();
         this.replay = new ReplayView();
         this.roomService = new RoomService();
+        this.historyView = "room";
         this.app.render("app");
         this.app.shell.append(this.history.container);
         this.app.shell.append(this.replay.container);
@@ -33,6 +34,16 @@ class HistoryController {
             this.load(this.history.input.value);
         });
         this.history.searchToggle.addEventListener("click", () => this.history.toggleSearch());
+        this.history.roomViewButton.addEventListener("click", () => {
+            this.historyView = "room";
+            this.history.setHistoryView("room");
+            if (this.entries) this.renderHistoryRows(this.entries);
+        });
+        this.history.gameViewButton.addEventListener("click", () => {
+            this.historyView = "game";
+            this.history.setHistoryView("game");
+            if (this.entries) this.renderHistoryRows(this.entries);
+        });
         this.history.copyPlayerId.addEventListener("click", async () => {
             const playerId = this.history.identityId.textContent.trim();
             if (!playerId) return;
@@ -126,6 +137,7 @@ class HistoryController {
         try {
             const response = await gameRecordApi.listGames(playerId);
             const items = this.parseGameList(response);
+            await this.attachRoomKeys(items);
             if (!items.length) {
                 this.history.clearStatus();
                 this.history.showEmptyState(
@@ -158,8 +170,38 @@ class HistoryController {
             .filter((item) => item.id);
     }
 
+    async attachRoomKeys(items) {
+        try {
+            const roomsResponse = await roomRecordApi.listRooms();
+            const roomIds = this.parseJson(roomsResponse);
+            if (!Array.isArray(roomIds) || !roomIds.length) return;
+            const roomLists = await Promise.all(roomIds.map(async (roomId) => {
+                try {
+                    const response = await roomRecordApi.listGames(roomId);
+                    return { roomId, games: this.parseJson(response) };
+                } catch {
+                    return { roomId, games: [] };
+                }
+            }));
+            const roomByGame = new Map();
+            roomLists.forEach(({ roomId, games }) => {
+                if (!Array.isArray(games)) return;
+                games.forEach((game) => {
+                    const gameId = game?.gameId || game?.id;
+                    if (gameId) roomByGame.set(gameId, game?.roomId || roomId);
+                });
+            });
+            items.forEach((item) => {
+                if (!item.roomKey && roomByGame.has(item.id)) item.roomKey = roomByGame.get(item.id);
+            });
+        } catch (error) {
+            console.warn("Room history could not be resolved.", error);
+        }
+    }
+
     async renderGames(items) {
         const entries = items.map((item) => ({ item, ...this.createGameRow(item) }));
+        this.entries = entries;
         entries.forEach((entry) => {
             entry.row.addEventListener("click", () => void this.openReplay(entry));
             entry.replay.addEventListener("click", (event) => {
@@ -167,7 +209,7 @@ class HistoryController {
                 void this.openReplay(entry);
             });
         });
-        entries.forEach((entry) => this.history.gamesBody.append(entry.row, entry.detailRow));
+        this.renderHistoryRows(entries);
         for (const entry of entries) {
             try {
                 const detail = await gameRecordApi.getGame(entry.item.id);
@@ -177,6 +219,57 @@ class HistoryController {
                 this.failGameRow(entry, this.errorMessage(error));
             }
         }
+        if (this.historyView === "room") this.renderHistoryRows(entries);
+    }
+
+    renderHistoryRows(entries) {
+        this.history.gamesBody.replaceChildren();
+        if (this.historyView !== "room") {
+            entries.forEach((entry) => this.history.gamesBody.append(entry.row, entry.detailRow));
+            return;
+        }
+        const groups = new Map();
+        entries.forEach((entry) => {
+            const key = entry.item.roomKey || "unassigned";
+            if (!groups.has(key)) groups.set(key, []);
+            groups.get(key).push(entry);
+        });
+        groups.forEach((group, roomKey) => {
+            const groupRow = document.createElement("tr");
+            const cell = document.createElement("td");
+            const button = document.createElement("button");
+            const chevron = document.createElement("span");
+            const label = document.createElement("span");
+            const count = document.createElement("small");
+            groupRow.className = "history-room-row";
+            cell.colSpan = 4;
+            button.type = "button";
+            button.className = "history-room-toggle";
+            chevron.className = "history-room-chevron";
+            chevron.textContent = "▾";
+            label.textContent = roomKey === "unassigned" ? "Room unavailable" : `Room ${this.shortRoomKey(roomKey)}`;
+            count.textContent = `${group.length} game${group.length === 1 ? "" : "s"}`;
+            button.setAttribute("aria-expanded", "false");
+            groupRow.classList.add("is-collapsed");
+            button.addEventListener("click", () => {
+                const open = button.getAttribute("aria-expanded") === "true";
+                button.setAttribute("aria-expanded", String(!open));
+                button.closest("tr").classList.toggle("is-collapsed", open);
+                group.forEach((entry) => {
+                    entry.row.hidden = open;
+                    entry.detailRow.hidden = true;
+                });
+            });
+            button.append(chevron, label, count);
+            cell.append(button);
+            groupRow.append(cell);
+            this.history.gamesBody.append(groupRow);
+            group.forEach((entry) => {
+                entry.row.hidden = true;
+                entry.detailRow.hidden = true;
+                this.history.gamesBody.append(entry.row, entry.detailRow);
+            });
+        });
     }
 
     createGameRow(item) {
@@ -323,7 +416,7 @@ class HistoryController {
                 : { tile, outcome: "loss", label: "Loss" };
         }
         if (board.every(Boolean)) return { tile: tile || "-", outcome: "draw", label: "Draw" };
-        return { tile: tile || "-", outcome: "unknown", label: "In progress" };
+        return { tile: tile || "-", outcome: "unknown", label: "Incomplete" };
     }
 
     extractRoomKey(moves) {

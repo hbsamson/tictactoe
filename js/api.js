@@ -113,9 +113,10 @@ export const gameRecordApi = {
 };
 
 export const roomRecordApi = {
-    saveGames: (roomKey, gameIds) => webserviceRequest("room/save", {
+    listRooms: () => webserviceRequest("room"),
+    saveGames: (roomId, gameIds) => webserviceRequest("room/save", {
         method: "POST",
-        body: { roomKey, gameIds }
+        body: { roomId, gameIds }
     }),
-    listGames: (roomCode) => webserviceRequest(`room/${encodeURIComponent(roomCode)}`)
+    listGames: (roomId) => webserviceRequest(`room/${encodeURIComponent(roomId)}`)
 };
