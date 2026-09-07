@@ -157,6 +157,7 @@ async function pollServer() {
 
 async function refreshBoard() {
     const boardInfo = await room.board(state.key);
+    if (state.leaving || state.view === "lobby") return;
     if (boardInfo === BOARD_PENDING) {
         state.spectatorExitSince = null;
         if (state.view === "spectating") {
@@ -164,10 +165,10 @@ async function refreshBoard() {
             return;
         }
         if (state.view === "finished") {
-            if (state.autoRematch && state.autoRematchReady) joinRematch();
-            else if (state.autoRematch) {
-                state.autoRematch = false;
-                disconnectFromClosedRoom();
+            // Each browser sees the draw at a different time. A pending board
+            // during the countdown means the rival is preparing the next round.
+            if (state.autoRematch) {
+                if (state.autoRematchReady) await joinRematch();
             } else showGameEndModal();
         }
         else if (state.view === "playing") disconnectFromClosedRoom();
@@ -276,9 +277,11 @@ function clearDrawRematchTimer() {
 }
 
 async function requestRematch() {
+    if (state.leaving) return;
     clearDrawRematchTimer();
     closeModal();
     stopPolling();
+    state.leaving = true;
     try {
         await room.reset(state.key);
         const gameId = room.createRoundId(state.key);
@@ -288,6 +291,7 @@ async function requestRematch() {
         elements.waitingStatus.textContent = "Rematch requested - waiting for your rival…";
         schedulePoll();
     } catch (error) {
+        state.leaving = false;
         handleError(error, "The rematch could not be created.");
         schedulePoll();
     }
