@@ -225,7 +225,11 @@ class HistoryController {
     renderHistoryRows(entries) {
         this.history.gamesBody.replaceChildren();
         if (this.historyView !== "room") {
-            entries.forEach((entry) => this.history.gamesBody.append(entry.row, entry.detailRow));
+            entries.forEach((entry) => {
+                entry.row.hidden = false;
+                entry.detailRow.hidden = true;
+                this.history.gamesBody.append(entry.row, entry.detailRow);
+            });
             return;
         }
         const groups = new Map();
