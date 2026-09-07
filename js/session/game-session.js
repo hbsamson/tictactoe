@@ -1,5 +1,5 @@
 import { EMPTY_BOARD, currentTurn, resultFor } from "../game/game.js";
-import { getLobbyProfile } from "../lobby/lobby.js";
+import { generateKey, getLobbyProfile } from "../lobby/lobby.js";
 
 export class GameSession {
     constructor(elements, roomService, ui) {
@@ -36,6 +36,7 @@ export class GameSession {
             movePending: false, pendingIndex: null, autoRematch: false,
             autoRematchReady: false, skipGameStart: false
         });
+        this.registerGames(key);
         this.ui.setRoom(key, tile, false, players);
         this.ui.setScores(this.state.scores);
         this.ui.renderBoard(this.state.board, { ...this.state, spectator: false });
@@ -72,6 +73,7 @@ export class GameSession {
 
     startRematch(tile, gameId, view) {
         this.prepareRematch(tile, gameId, view);
+        this.registerGames(this.state.key);
         this.roomService.saveProfile(this.state.key, tile, this.state.profile);
         this.state.players = this.roomService.readProfiles(this.state.key);
         this.state.profile = this.state.players[tile] || this.state.profile;
@@ -82,9 +84,15 @@ export class GameSession {
 
     returnToLobby() {
         this.resetState();
-        this.elements.keyInput.value = crypto.randomUUID();
+        this.elements.keyInput.value = generateKey();
         this.ui.setKeyError();
         this.ui.showView("lobby");
+    }
+
+    registerGames(roomKey) {
+        const gameIds = this.roomService.readRoundIds(roomKey);
+        void this.roomService.saveGamesToRoom(roomKey, gameIds)
+            .catch((error) => console.warn("Unable to link game to room.", error));
     }
 
     async saveMoveSnapshot(location) {
@@ -97,7 +105,7 @@ export class GameSession {
         try {
             await this.roomService.saveMove({
                 gameId: this.state.gameId, playerId: this.state.profile.id,
-                roomKey: this.state.key, playerName: this.state.profile.name, symbol: this.state.tile,
+                playerName: this.state.profile.name, symbol: this.state.tile,
                 location: String(location), dateSaved
             });
         } catch (error) {

@@ -39,7 +39,7 @@ async function pollConnectionStatus() {
 
 function validateKey(key) {
     if (!isValidKey(key)) {
-        setKeyError("Invalid room ID. Use a UUID such as 123e4567-e89b-12d3-a456-426614174000.");
+        setKeyError("Invalid room key. Use 4-6 letters or numbers.");
         elements.keyInput.focus();
         return false;
     }
@@ -538,4 +538,3 @@ new EventHandler(elements).bind({
 elements.keyInput.value = generateKey();
 showView("lobby");
 pollConnectionStatus();
-

@@ -88,12 +88,12 @@ export class LobbyView extends BaseComponent {
         this.keyInput.id = "gameKey";
         this.keyInput.name = "gameKey";
         this.keyInput.type = "text";
-        this.keyInput.minLength = 36;
-        this.keyInput.maxLength = 36;
+        this.keyInput.minLength = 4;
+        this.keyInput.maxLength = 6;
         this.keyInput.autocomplete = "off";
         this.keyInput.spellcheck = false;
-        this.keyInput.placeholder = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
-        this.keyInput.pattern = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}";
+        this.keyInput.placeholder = "e.g. HANNAH";
+        this.keyInput.pattern = "[A-Za-z0-9]{4,6}";
         this.keyInput.required = true;
 
         this.generateKey.id = "generateKeyButton";
@@ -112,7 +112,7 @@ export class LobbyView extends BaseComponent {
 
         this.keyHint.id = "keyHint";
         this.keyHint.className = "field-hint";
-        this.keyHint.textContent = "Use the generated room UUID, or paste one shared by another player.";
+        this.keyHint.textContent = "Use 4-6 alphanumeric characters, or paste a shared room key.";
 
         this.identityFields.className = "identity-fields";
         this.avatarPicker.className = "avatar-picker";

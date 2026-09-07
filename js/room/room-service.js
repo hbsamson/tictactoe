@@ -1,4 +1,4 @@
-import { gameApi, gameRecordApi } from "../api.js";
+import { gameApi, gameRecordApi, roomRecordApi } from "../api.js";
 import {
     createRoundGameId, cheerFromStorageEvent, isPlayerProfilesEvent, isScoresEvent,
     publishCheer, publishSharedKey, readPlayerProfiles, readRoundGameId, readRoundGameIds,
@@ -14,6 +14,9 @@ export class RoomService {
     reset(key) { return gameApi.reset(key); }
     resetUrl(key) { return gameApi.resetUrl(key); }
     saveMove(record) { return gameRecordApi.save(record); }
+    saveGamesToRoom(roomKey, gameIds) {
+        return roomRecordApi.saveGames(roomKey, gameIds);
+    }
     createRoundId(key) { return createRoundGameId(key); }
     readRoundId(key) { return readRoundGameId(key); }
     readRoundIds(key) { return readRoundGameIds(key); }

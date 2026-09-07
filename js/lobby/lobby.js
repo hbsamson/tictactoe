@@ -1,13 +1,15 @@
-import { KEY_PATTERN, PLAYER_AVATARS } from "../config.js";
+import { KEY_PATTERN, PLAYER_AVATARS, ROOM_KEY_PATTERN } from "../config.js";
 
 const TAB_PLAYER_ID_KEY = "tictactoe:tab-player-id";
 
 export function generateKey() {
-    return crypto.randomUUID();
+    const characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    const bytes = crypto.getRandomValues(new Uint8Array(6));
+    return [...bytes].map((byte) => characters[byte % characters.length]).join("");
 }
 
 export function isValidKey(key) {
-    return KEY_PATTERN.test(key);
+    return ROOM_KEY_PATTERN.test(key);
 }
 
 /**
@@ -47,4 +49,3 @@ export function changeAvatar(elements, direction) {
     elements.avatarPreview.alt = name;
     if (!enteredName || enteredName === previousName) elements.playerName.value = name;
 }
-

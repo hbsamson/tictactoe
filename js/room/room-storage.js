@@ -1,4 +1,4 @@
-import { KEY_PATTERN, PLAYER_AVATARS } from "../config.js";
+import { KEY_PATTERN, PLAYER_AVATARS, ROOM_KEY_PATTERN } from "../config.js";
 import { getTabPlayerId } from "../lobby/lobby.js";
 
 const CHEER_STORAGE_PREFIX = "tictactoe:cheers:";
@@ -72,7 +72,7 @@ export function publishSharedKey(key) {
 
 export function sharedKeyFromStorageEvent(event) {
     const key = event?.newValue || "";
-    return event?.key === SHARED_KEY_STORAGE && KEY_PATTERN.test(key) ? key : "";
+    return event?.key === SHARED_KEY_STORAGE && ROOM_KEY_PATTERN.test(key) ? key : "";
 }
 
 export function readPlayerProfiles(roomKey) {
@@ -135,7 +135,7 @@ export function readRoundGameId(roomKey) {
 }
 
 export function saveRoundGameId(roomKey, gameId) {
-    if (!roomKey || !KEY_PATTERN.test(gameId)) return;
+    if (!ROOM_KEY_PATTERN.test(roomKey) || !KEY_PATTERN.test(gameId)) return;
     try {
         const existing = readStoredRoundIds(roomKey);
         const next = existing.includes(gameId) ? existing : [...existing, gameId];
@@ -155,7 +155,7 @@ export function readRoundGameIds(roomKey) {
 
 export function shortRoomKey(roomKey, length = ROOM_KEY_CUT_LENGTH) {
     if (typeof roomKey !== "string" || !roomKey) return "";
-    return roomKey.length > length ? roomKey.slice(0, length) + "..." : roomKey;
+    return roomKey.length > length ? roomKey.slice(0, length) : roomKey;
 }
 
 export function storeCurrentPlayer(profile) {
