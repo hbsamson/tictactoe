@@ -115,6 +115,15 @@
     color: var(--muted);
 }
 
+.history-status:not(:empty) {
+    padding: 12px 14px;
+
+    border: 1px solid var(--line);
+    border-radius: 4px;
+
+    background: rgba(255, 255, 255, 0.05);
+}
+
 .history-status.error {
     color: #f7a3a3;
 }

@@ -194,13 +194,11 @@ export class HistoryView extends BaseComponent {
         this.gamesBody.innerHTML = "";
 
         if (!games || games.length === 0) {
-            this.gamesTable.hidden = true;
-            this.emptyState.hidden = false;
+            this.showEmptyState("This player has no saved games yet.");
             return;
         }
 
-        this.gamesTable.hidden = false;
-        this.emptyState.hidden = true;
+        this.hideEmptyState();
 
         games.forEach((game) => {
             const row = document.createElement("tr");
@@ -325,6 +323,22 @@ export class HistoryView extends BaseComponent {
         });
     }
 
+    showEmptyState(message, title = "NO RECORDS FOUND") {
+        const heading = this.emptyState.querySelector("strong");
+        const body = this.emptyState.querySelector("span");
+
+        if (heading) heading.textContent = title;
+        if (body) body.textContent = message;
+
+        this.gamesTable.hidden = true;
+        this.emptyState.hidden = false;
+    }
+
+    hideEmptyState() {
+        this.gamesTable.hidden = false;
+        this.emptyState.hidden = true;
+    }
+
     showStatus(message, isError = false) {
         this.status.textContent = message;
 
@@ -341,7 +355,6 @@ export class HistoryView extends BaseComponent {
 
     clearGames() {
         this.gamesBody.innerHTML = "";
-        this.gamesTable.hidden = false;
-        this.emptyState.hidden = true;
+        this.hideEmptyState();
     }
 }

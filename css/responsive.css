@@ -1,7 +1,9 @@
 /* Mobile-first: phones use the base rules. */
 .app-shell { width: min(100% - 20px, 1180px); }
 .brand-bar { height: 56px; }
-.brand { font-size: 13px; }
+.brand { font-size: 12px; }
+.brand-bar .history-link,
+.brand-bar .history-link[aria-current="page"] { font-size: 12px; }
 .connection-pill { font-size: 8px; }
 .view { height: calc(100dvh - 56px); }
 
@@ -180,7 +182,9 @@
 @media (min-width: 901px) {
   .app-shell { width: min(1180px, calc(100% - 40px)); }
   .brand-bar { height: 72px; }
-  .brand { font-size: 15px; }
+  .brand { font-size: 13px; }
+  .brand-bar .history-link,
+  .brand-bar .history-link[aria-current="page"] { font-size: 13px; }
   .connection-pill { font-size: 12px; }
   .view { height: calc(100dvh - 72px); }
   .lobby {

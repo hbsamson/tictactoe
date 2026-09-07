@@ -147,9 +147,10 @@
   color: var(--ink);
   background: transparent;
   font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
-  font-size: 13px;
+  font-size: 18px;
   font-weight: 800;
-  letter-spacing: 0;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   outline: 0;
 }
 .key-field input::placeholder {

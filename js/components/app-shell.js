@@ -12,6 +12,7 @@ export class AppShell extends BaseComponent {
         this.backdrop = document.createElement("div");
         this.shell = document.createElement("main");
         this.brandBar = document.createElement("header");
+        this.primaryNav = document.createElement("nav");
         this.brandLink = document.createElement("a");
         this.brandText = document.createElement("span");
         this.brandStrong = document.createElement("strong");
@@ -26,6 +27,9 @@ export class AppShell extends BaseComponent {
     }
 
     setAttributes() {
+        const resourcePath = window.location.pathname.replace(/\/+$/, "");
+        const isHistoryRoute = resourcePath.endsWith("/history") || resourcePath.endsWith("/history.html");
+
         this.container.id = "appRoot";
 
         this.backdrop.className = "city";
@@ -34,10 +38,12 @@ export class AppShell extends BaseComponent {
         this.shell.className = "app-shell";
 
         this.brandBar.className = "brand-bar";
+        this.primaryNav.className = "primary-nav";
+        this.primaryNav.setAttribute("aria-label", "Primary navigation");
         this.brandLink.className = "brand";
         this.brandLink.href = "./";
         this.brandLink.setAttribute("aria-label", "Hannah's Tic-Tac-Toe home");
-        this.brandText.textContent = "Hannah";
+        this.brandText.textContent = "Play";
         this.brandStrong.textContent = "Tic-Tac-Toe";
         this.connection.id = "connectionStatus";
         this.connection.className = "connection-pill";
@@ -46,15 +52,22 @@ export class AppShell extends BaseComponent {
         this.historyLink.href = "history.html";
         this.historyLink.className = "history-link";
         this.historyLink.textContent = "History";
+
+        if (isHistoryRoute) {
+            this.brandLink.removeAttribute("aria-current");
+            this.historyLink.setAttribute("aria-current", "page");
+        } else {
+            this.brandLink.setAttribute("aria-current", "page");
+            this.historyLink.removeAttribute("aria-current");
+        }
     }
 
     appendElements() {
         this.container.append(this.backdrop, this.shell, this.gameStartOverlay.container, this.modalOverlay.container, this.toast.container);
         this.shell.append(this.brandBar, this.lobbyView.container, this.waitingView.container, this.gameView.container);
-        const spacer = document.createElement("span");
-        spacer.className = "brand-spacer";
-        this.brandBar.append(this.brandLink, spacer, this.historyLink, this.connection);
-        this.brandLink.append(this.brandText, this.brandStrong);
+        this.primaryNav.append(this.brandLink, this.historyLink);
+        this.brandBar.append(this.primaryNav, this.connection);
+        this.brandLink.append(this.brandText);
     }
 
     render(target) {

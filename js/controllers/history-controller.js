@@ -63,16 +63,21 @@ class HistoryController {
         sessionStorage.setItem(HISTORY_PLAYER_KEY, playerId);
         this.activePlayerId = playerId;
         this.history.submit.disabled = true;
+        this.history.clearGames();
         this.setStatus("Loading saved games...");
-        this.history.gamesBody.replaceChildren();
         try {
             const response = await gameRecordApi.listGames(playerId);
             const items = this.parseGameList(response);
             if (!items.length) {
                 this.setStatus("No saved games found for this player.");
+                this.history.showEmptyState(
+                    "No saved games found for this player.",
+                    "NO SAVED GAMES"
+                );
                 return;
             }
             this.setStatus(items.length + " saved game" + (items.length === 1 ? "" : "s") + " found");
+            this.history.hideEmptyState();
             void this.renderGames(items);
         } catch (error) {
             console.error(error);

@@ -83,7 +83,7 @@ export class LobbyView extends BaseComponent {
         this.cardGrid.innerHTML = "xo<br>ox";
 
         this.label.setAttribute("for", "gameKey");
-        this.label.innerHTML = 'Room ID <span class="required-mark" aria-hidden="true">*</span>';
+        this.label.innerHTML = 'Game Key <span class="required-mark" aria-hidden="true">*</span>';
         this.keyField.className = "key-field";
         this.keyInput.id = "gameKey";
         this.keyInput.name = "gameKey";
