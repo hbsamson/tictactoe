@@ -97,7 +97,7 @@ export class GameSession {
         try {
             await this.roomService.saveMove({
                 gameId: this.state.gameId, playerId: this.state.profile.id,
-                playerName: this.state.profile.name, symbol: this.state.tile,
+                roomKey: this.state.key, playerName: this.state.profile.name, symbol: this.state.tile,
                 location: String(location), dateSaved
             });
         } catch (error) {

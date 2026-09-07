@@ -5,6 +5,7 @@ import { RoomService } from "../room/room-service.js";
 
 const HISTORY_PLAYER_KEY = "tictactoe:history-player-id";
 const SHORT_ID_LENGTH = 8;
+const SHORT_SUFFIX_LENGTH = 6;
 const WIN_LINES = [
     [0, 1, 2], [3, 4, 5], [6, 7, 8],
     [0, 3, 6], [1, 4, 7], [2, 5, 8],
@@ -62,7 +63,7 @@ class HistoryController {
         sessionStorage.setItem(HISTORY_PLAYER_KEY, playerId);
         this.activePlayerId = playerId;
         this.history.submit.disabled = true;
-        this.setStatus("Loading saved games…");
+        this.setStatus("Loading saved games...");
         this.history.gamesBody.replaceChildren();
         try {
             const response = await gameRecordApi.listGames(playerId);
@@ -89,7 +90,8 @@ class HistoryController {
         return items
             .map((item) => ({
                 id: item?.id || item?.gameId || "",
-                playerName: item?.playerName || item?.name || ""
+                playerName: item?.playerName || item?.name || "",
+                roomKey: item?.roomKey || item?.roomId || ""
             }))
             .filter((item) => item.id);
     }
@@ -112,6 +114,8 @@ class HistoryController {
         const row = document.createElement("tr");
         const detailRow = document.createElement("tr");
         const idCell = document.createElement("td");
+        const idValue = document.createElement("span");
+        const roomValue = document.createElement("small");
         const tileCell = document.createElement("td");
         const resultCell = document.createElement("td");
         const badge = document.createElement("span");
@@ -126,12 +130,20 @@ class HistoryController {
 
         row.className = "history-game-row";
         idCell.className = "history-game-id";
-        idCell.textContent = this.shortId(item.id);
-        idCell.title = item.id;
+        idValue.className = "history-game-id-value";
+        idValue.textContent = this.shortId(item.id);
+        idValue.title = item.id;
+        roomValue.className = "history-room-key";
+        roomValue.hidden = !item.roomKey;
+        roomValue.textContent = item.roomKey ? `Room ${this.shortRoomKey(item.roomKey)}` : "";
+        roomValue.title = item.roomKey || "";
+        idCell.title = item.id + (item.roomKey ? ` | Room ${item.roomKey}` : "");
+        idCell.append(idValue, roomValue);
+
         tileCell.className = "history-tile";
-        tileCell.textContent = "…";
+        tileCell.textContent = "...";
         badge.className = "history-result history-result-unknown";
-        badge.textContent = "…";
+        badge.textContent = "...";
         replay.type = "button";
         replay.className = "history-replay";
         replay.textContent = "Replay Game";
@@ -174,20 +186,30 @@ class HistoryController {
         });
 
         row.append(idCell, tileCell, resultCell, actionCell);
-        return { row, detailRow, tileCell, badge, detailTitle, detailBody, item };
+        return { row, detailRow, tileCell, badge, detailTitle, detailBody, roomValue, item };
     }
 
     fillGameRow(entry, moves, playerId) {
         const sorted = [...moves].sort((a, b) =>
             String(a.dateSaved || "").localeCompare(String(b.dateSaved || ""))
         );
+        const roomKey = this.extractRoomKey(sorted) || entry.item.roomKey || "";
+        if (roomKey) {
+            entry.item.roomKey = roomKey;
+            entry.row.dataset.roomKey = roomKey;
+            entry.roomValue.hidden = false;
+            entry.roomValue.textContent = `Room ${this.shortRoomKey(roomKey)}`;
+            entry.roomValue.title = roomKey;
+            entry.row.title = entry.item.id + " | Room " + roomKey;
+        }
         const analysis = this.analyzeGame(sorted, playerId, entry.item.playerName);
         entry.tileCell.textContent = analysis.tile;
         entry.badge.className = "history-result history-result-" + analysis.outcome;
         entry.badge.textContent = analysis.label;
         entry.detailTitle.textContent =
             (moves.length === 1 ? "1 move" : moves.length + " moves") +
-            (entry.item.playerName ? " · " + entry.item.playerName : "");
+            (roomKey ? " | Room " + this.shortRoomKey(roomKey) : "") +
+            (entry.item.playerName ? " | " + entry.item.playerName : "");
         entry.detailBody.replaceChildren();
         if (!sorted.length) {
             entry.detailBody.append(this.detailMessageRow("No moves were recorded for this game.", 5));
@@ -202,7 +224,7 @@ class HistoryController {
             const when = document.createElement("td");
             num.className = "history-detail-num";
             num.textContent = String(index + 1);
-            player.textContent = move.playerName || "Player";
+            player.textContent = this.formatPlayerName(move.playerName, move.playerId);
             symbol.className = "history-tile";
             symbol.textContent = move.symbol || "?";
             location.className = "history-detail-location";
@@ -237,17 +259,33 @@ class HistoryController {
             }
         }
         if (winner) {
-            if (!tile) return { tile: "—", outcome: "unknown", label: winner + " won" };
+            if (!tile) return { tile: "-", outcome: "unknown", label: winner + " won" };
             return winner === tile
                 ? { tile, outcome: "win", label: "Win" }
                 : { tile, outcome: "loss", label: "Loss" };
         }
-        if (board.every(Boolean)) return { tile: tile || "—", outcome: "draw", label: "Draw" };
-        return { tile: tile || "—", outcome: "unknown", label: "In progress" };
+        if (board.every(Boolean)) return { tile: tile || "-", outcome: "draw", label: "Draw" };
+        return { tile: tile || "-", outcome: "unknown", label: "In progress" };
+    }
+
+    extractRoomKey(moves) {
+        const entry = moves.find((move) => typeof move.roomKey === "string" && move.roomKey.trim());
+        return entry?.roomKey || "";
+    }
+
+    formatPlayerName(playerName, playerId) {
+        const name = typeof playerName === "string" && playerName.trim() ? playerName.trim() : "Player";
+        const suffix = this.shortSuffix(playerId);
+        return suffix ? `${name} [${suffix}]` : name;
+    }
+
+    shortSuffix(value) {
+        if (typeof value !== "string" || !value) return "";
+        return value.length > SHORT_SUFFIX_LENGTH ? value.slice(-SHORT_SUFFIX_LENGTH) : value;
     }
 
     formatDateTime(value) {
-        if (!value) return "—";
+        if (!value) return "-";
         const date = new Date(value);
         if (Number.isNaN(date.getTime())) return String(value);
         return date.toLocaleString(undefined, {
@@ -269,7 +307,7 @@ class HistoryController {
     }
 
     failGameRow(entry, message) {
-        entry.tileCell.textContent = "—";
+        entry.tileCell.textContent = "-";
         entry.badge.className = "history-result history-result-unknown";
         entry.badge.textContent = "N/A";
         entry.detailTitle.textContent = "Move records unavailable";
@@ -293,7 +331,11 @@ class HistoryController {
     }
 
     shortId(gameId) {
-        return gameId.length > SHORT_ID_LENGTH ? gameId.slice(0, SHORT_ID_LENGTH) + "…" : gameId;
+        return gameId.length > SHORT_ID_LENGTH ? gameId.slice(0, SHORT_ID_LENGTH) + "..." : gameId;
+    }
+
+    shortRoomKey(roomKey) {
+        return this.roomService.shortRoomKey(roomKey);
     }
 
     errorMessage(error) {

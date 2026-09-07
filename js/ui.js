@@ -1,4 +1,5 @@
 import { AppShell } from "./components/app-shell.js";
+import { shortRoomKey } from "./room/room-storage.js";
 
 const app = new AppShell();
 app.render("app");
@@ -103,8 +104,13 @@ export function setKeyError(message = "") {
 }
 
 export function setRoom(key, tile, spectator = false, players = {}) {
-    elements.waitingKey.textContent = key;
-    elements.activeGameKey.textContent = key;
+    const displayKey = shortRoomKey(key);
+    elements.waitingKey.textContent = displayKey;
+    elements.waitingKey.title = key;
+    elements.activeGameKey.textContent = displayKey;
+    elements.activeGameKey.title = key;
+    elements.copyWaitingKey.title = key;
+    elements.copyGameKey.title = key;
     byId("gameModeLabel").textContent = spectator ? "Watching live" : "Live match";
     byId("spectatorBadge").hidden = !spectator;
     views.game.classList.toggle("is-spectator", spectator);

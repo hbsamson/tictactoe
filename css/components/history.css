@@ -391,10 +391,24 @@
    ========================= */
 
 .history-game-id {
-    display: inline-block;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
 
     max-width: 260px;
 
+    overflow: hidden;
+}
+
+.history-game-id::before {
+    content: "# ";
+
+    color: var(--red);
+    font-weight: 900;
+}
+
+.history-game-id-value {
     overflow: hidden;
 
     color: #fff;
@@ -415,11 +429,22 @@
     white-space: nowrap;
 }
 
-.history-game-id::before {
-    content: "# ";
+.history-room-key {
+    color: var(--muted);
 
-    color: var(--red);
-    font-weight: 900;
+    font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Consolas,
+        monospace;
+
+    font-size: 10px;
+    font-weight: 700;
+
+    letter-spacing: 0.08em;
+
+    text-transform: uppercase;
 }
 
 /* =========================

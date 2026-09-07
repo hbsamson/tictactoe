@@ -45,7 +45,7 @@ export class AppShell extends BaseComponent {
         this.connection.textContent = "Checking server...";
         this.historyLink.href = "history.html";
         this.historyLink.className = "history-link";
-        this.historyLink.textContent = "/history";
+        this.historyLink.textContent = "History";
     }
 
     appendElements() {

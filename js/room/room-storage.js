@@ -7,11 +7,49 @@ const PLAYER_STORAGE_PREFIX = "tictactoe:players:";
 const ROUND_STORAGE_PREFIX = "tictactoe:round:";
 const SHARED_KEY_STORAGE = "tictactoe:shared-room-key";
 const CURRENT_PLAYER_STORAGE = "tictactoe:current-player";
+const ROOM_KEY_CUT_LENGTH = 6;
 
 const cheerStorageKey = (roomKey) => `${CHEER_STORAGE_PREFIX}${roomKey}`;
 const scoreStorageKey = (roomKey) => `${SCORE_STORAGE_PREFIX}${roomKey}`;
 const playerStorageKey = (roomKey) => `${PLAYER_STORAGE_PREFIX}${roomKey}`;
 const roundStorageKey = (roomKey) => `${ROUND_STORAGE_PREFIX}${roomKey}`;
+
+function normalizeRoundIds(value) {
+    if (!value) return [];
+    if (Array.isArray(value)) {
+        return [...new Set(value.filter((entry) => KEY_PATTERN.test(entry)))];
+    }
+    if (typeof value === "string") {
+        const trimmed = value.trim();
+        if (!trimmed) return [];
+        if (trimmed.startsWith("[")) {
+            try {
+                return normalizeRoundIds(JSON.parse(trimmed));
+            } catch {
+                return KEY_PATTERN.test(trimmed) ? [trimmed] : [];
+            }
+        }
+        return KEY_PATTERN.test(trimmed) ? [trimmed] : [];
+    }
+    if (typeof value === "object") {
+        return normalizeRoundIds(value.games || value.ids || value.gameIds || value.rounds || value.active || []);
+    }
+    return [];
+}
+
+function readStoredRoundIds(roomKey) {
+    try {
+        const raw = localStorage.getItem(roundStorageKey(roomKey));
+        if (!raw) return [];
+        try {
+            return normalizeRoundIds(JSON.parse(raw));
+        } catch {
+            return normalizeRoundIds(raw);
+        }
+    } catch {
+        return [];
+    }
+}
 
 export function publishCheer(roomKey, entry) {
     localStorage.setItem(cheerStorageKey(roomKey), JSON.stringify(entry));
@@ -92,18 +130,16 @@ export function isScoresEvent(event, roomKey) {
 }
 
 export function readRoundGameId(roomKey) {
-    try {
-        const gameId = localStorage.getItem(roundStorageKey(roomKey));
-        return KEY_PATTERN.test(gameId) ? gameId : "";
-    } catch {
-        return "";
-    }
+    const gameIds = readStoredRoundIds(roomKey);
+    return gameIds[gameIds.length - 1] || "";
 }
 
 export function saveRoundGameId(roomKey, gameId) {
     if (!roomKey || !KEY_PATTERN.test(gameId)) return;
     try {
-        localStorage.setItem(roundStorageKey(roomKey), gameId);
+        const existing = readStoredRoundIds(roomKey);
+        const next = existing.includes(gameId) ? existing : [...existing, gameId];
+        localStorage.setItem(roundStorageKey(roomKey), JSON.stringify(next));
     } catch {}
 }
 
@@ -111,6 +147,15 @@ export function createRoundGameId(roomKey) {
     const gameId = crypto.randomUUID();
     saveRoundGameId(roomKey, gameId);
     return gameId;
+}
+
+export function readRoundGameIds(roomKey) {
+    return readStoredRoundIds(roomKey);
+}
+
+export function shortRoomKey(roomKey, length = ROOM_KEY_CUT_LENGTH) {
+    if (typeof roomKey !== "string" || !roomKey) return "";
+    return roomKey.length > length ? roomKey.slice(0, length) + "..." : roomKey;
 }
 
 export function storeCurrentPlayer(profile) {
@@ -137,4 +182,3 @@ export function readStoredCurrentPlayer() {
         return null;
     }
 }
-
