@@ -21,10 +21,13 @@ export class HistoryView extends BaseComponent {
         this.identityLabel = document.createElement("span");
         this.identityName = document.createElement("strong");
         this.identityId = document.createElement("small");
+        this.identityIdLine = document.createElement("div");
+        this.copyPlayerId = document.createElement("button");
 
         this.label = document.createElement("label");
         this.input = document.createElement("input");
         this.submit = document.createElement("button");
+        this.searchToggle = document.createElement("button");
 
         this.status = document.createElement("p");
 
@@ -62,6 +65,23 @@ export class HistoryView extends BaseComponent {
             "Every saved match — pick a game to replay it move by move.";
 
 
+        this.form.className = "history-search";
+        this.form.hidden = true;
+        this.searchToggle.className = "history-search-toggle button button-ghost";
+        this.searchToggle.type = "button";
+        this.searchToggle.textContent = "Search another player";
+        this.label.setAttribute("for", "historyPlayerId");
+        this.label.textContent = "Search another player ID";
+        this.input.id = "historyPlayerId";
+        this.input.name = "playerId";
+        this.input.type = "text";
+        this.input.autocomplete = "off";
+        this.input.placeholder = "Enter player ID";
+        this.input.required = true;
+        this.submit.className = "button button-primary";
+        this.submit.type = "submit";
+        this.submit.textContent = "Load games";
+
         // Player identity
         this.identity.className = "history-identity";
         this.identity.hidden = true;
@@ -82,6 +102,12 @@ export class HistoryView extends BaseComponent {
 
         this.identityId.className =
             "history-identity-id";
+        this.identityIdLine.className = "history-identity-id-line";
+        this.copyPlayerId.className = "history-copy-id";
+        this.copyPlayerId.type = "button";
+        this.copyPlayerId.title = "Copy player ID";
+        this.copyPlayerId.setAttribute("aria-label", "Copy current player ID");
+        this.copyPlayerId.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
        
         // Status
         this.status.className = "history-status";
@@ -138,6 +164,7 @@ export class HistoryView extends BaseComponent {
         this.card.append(
             this.heading,
             this.identity,
+            this.searchToggle,
             this.form,
             this.status,
             this.games
@@ -159,8 +186,11 @@ export class HistoryView extends BaseComponent {
         this.identityBody.append(
             this.identityLabel,
             this.identityName,
-            this.identityId
+            this.identityIdLine
         );
+        this.identityIdLine.append(this.identityId, this.copyPlayerId);
+
+        this.form.append(this.label, this.input, this.submit);
 
         // Games table
         this.games.append(this.gamesTable);
@@ -172,6 +202,18 @@ export class HistoryView extends BaseComponent {
 
         // Empty state
         this.games.append(this.emptyState);
+    }
+
+    toggleSearch() {
+        this.form.hidden = !this.form.hidden;
+        this.searchToggle.textContent = this.form.hidden
+            ? "Search another player"
+            : "Close player search";
+        if (!this.form.hidden) this.input.focus();
+    }
+
+    showSearch() {
+        if (this.form.hidden) this.toggleSearch();
     }
 
     showPlayer(profile) {

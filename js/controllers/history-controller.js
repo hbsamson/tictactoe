@@ -32,6 +32,18 @@ class HistoryController {
             event.preventDefault();
             this.load(this.history.input.value);
         });
+        this.history.searchToggle.addEventListener("click", () => this.history.toggleSearch());
+        this.history.copyPlayerId.addEventListener("click", async () => {
+            const playerId = this.history.identityId.textContent.trim();
+            if (!playerId) return;
+            try {
+                await navigator.clipboard.writeText(playerId);
+                this.history.copyPlayerId.dataset.copied = "true";
+                window.setTimeout(() => delete this.history.copyPlayerId.dataset.copied, 1400);
+            } catch {
+                this.history.copyPlayerId.title = "Select the ID to copy it";
+            }
+        });
         this.replay.bind(
             () => this.closeReplay(),
             () => this.replay.replay()
@@ -82,6 +94,7 @@ class HistoryController {
     loadFromUrl() {
         const urlPlayerId = new URLSearchParams(window.location.search).get("playerId");
         if (urlPlayerId && urlPlayerId.trim()) {
+            this.history.showSearch();
             this.history.input.value = urlPlayerId;
             this.load(urlPlayerId);
             return;
