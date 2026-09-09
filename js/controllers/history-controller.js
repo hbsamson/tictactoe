@@ -3,7 +3,7 @@ import { AppShell } from "../components/app-shell.js";
 import { HistoryView } from "../components/history-view.js";
 import { ReplayView } from "../components/replay-view.js";
 import { RoomService } from "../room/room-service.js";
-import { CONNECTION_POLL_DELAY } from "../config.js";
+import { CONNECTION_POLL_DELAY, PLAYER_AVATARS } from "../config.js";
 import { generateKey } from "../lobby/lobby.js";
 
 const HISTORY_PLAYER_KEY = "tictactoe:history-player-id";
@@ -28,7 +28,6 @@ class HistoryController {
         this.app.lobbyView.container.hidden = true;
         this.app.waitingView.container.hidden = true;
         this.app.gameView.container.hidden = true;
-        this.showCurrentPlayer();
         this.history.form.addEventListener("submit", (event) => {
             event.preventDefault();
             this.load(this.history.input.value);
@@ -93,14 +92,6 @@ class HistoryController {
         }
     }
 
-    showCurrentPlayer() {
-        const current = this.roomService.readCurrentPlayer();
-        if (!current) {
-            return;
-        }
-        this.history.showPlayer(current);
-    }
-
     loadFromUrl() {
         const urlPlayerId = new URLSearchParams(window.location.search).get("playerId");
         if (urlPlayerId && urlPlayerId.trim()) {
@@ -145,6 +136,7 @@ class HistoryController {
                 );
                 return;
             }
+            this.showLatestSavedProfile(playerId, items);
             this.setStatus(items.length + " saved game" + (items.length === 1 ? "" : "s") + " found");
             this.history.hideEmptyState();
             void this.renderGames(items);
@@ -165,9 +157,26 @@ class HistoryController {
             .map((item) => ({
                 id: item?.id || item?.gameId || "",
                 playerName: item?.playerName || item?.name || "",
+                playerAvatar: item?.playerAvatar || item?.avatar || "",
+                gameDate: item?.gameDate || item?.dateSaved || "",
                 roomKey: item?.roomKey || item?.roomId || ""
             }))
             .filter((item) => item.id);
+    }
+
+    showLatestSavedProfile(playerId, items) {
+        const latest = items.reduce((current, item) => {
+            if (!current) return item;
+            return String(item.gameDate).localeCompare(String(current.gameDate)) > 0
+                ? item
+                : current;
+        }, null);
+        if (!latest) return;
+        this.history.showPlayer({
+            id: playerId,
+            name: latest.playerName || "Player",
+            avatar: PLAYER_AVATARS.includes(latest.playerAvatar) ? latest.playerAvatar : PLAYER_AVATARS[0]
+        });
     }
 
     async attachRoomKeys(items) {
