@@ -103,7 +103,7 @@ export class GameSession {
             date.getFullYear(), pad(date.getMonth() + 1), pad(date.getDate())
         ].join("-") + " " + [pad(date.getHours()), pad(date.getMinutes()), pad(date.getSeconds())].join(":");
         try {
-            await this.roomService.saveMove({
+            await this.roomService.saveMove(this.state.key, {
                 gameId: this.state.gameId, playerId: this.state.profile.id,
                 playerName: this.state.profile.name, playerAvatar: this.state.profile.avatar,
                 symbol: this.state.tile,

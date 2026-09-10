@@ -13,7 +13,7 @@ export class RoomService {
     move(key, tile, x, y) { return gameApi.move(key, tile, x, y); }
     reset(key) { return gameApi.reset(key); }
     resetUrl(key) { return gameApi.resetUrl(key); }
-    saveMove(record) { return gameRecordApi.save(record); }
+    saveMove(roomKey, record) { return gameRecordApi.save(roomKey, record); }
     saveGamesToRoom(roomKey, gameIds) {
         return roomRecordApi.saveGames(roomKey, gameIds);
     }

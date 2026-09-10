@@ -85,8 +85,10 @@ function parseWebserviceBody(body) {
     try { return JSON.parse(body); } catch { return body; }
 }
 
-async function saveRecord(record) {
-    const url = new URL(`${WEBSERVICE_API_BASE}/game/save`);
+async function saveRecord(roomId, record) {
+    const encodedRoomId = encodeURIComponent(roomId);
+    const encodedGameId = encodeURIComponent(record.gameId);
+    const url = new URL(`${WEBSERVICE_API_BASE}/rooms/${encodedRoomId}/games/${encodedGameId}/moves`);
 
     try {
         const response = await fetch(url, {
@@ -108,15 +110,15 @@ async function saveRecord(record) {
 
 export const gameRecordApi = {
     save: saveRecord,
-    listGames: (playerId) => webserviceRequest(`player/${encodeURIComponent(playerId)}/games`),
-    getGame: (gameId) => webserviceRequest(`game/${gameId}`)
+    listGames: (playerId) => webserviceRequest(`players/${encodeURIComponent(playerId)}/games`),
+    getGame: (gameId) => webserviceRequest(`games/${encodeURIComponent(gameId)}/moves`)
 };
 
 export const roomRecordApi = {
-    listRooms: () => webserviceRequest("room"),
-    saveGames: (roomId, gameIds) => webserviceRequest("room/save", {
+    listRooms: () => webserviceRequest("rooms"),
+    saveGames: (roomId, gameIds) => webserviceRequest(`rooms/${encodeURIComponent(roomId)}/games`, {
         method: "POST",
-        body: { roomId, gameIds }
+        body: { gameIds }
     }),
-    listGames: (roomId) => webserviceRequest(`room/${encodeURIComponent(roomId)}`)
+    listGames: (roomId) => webserviceRequest(`rooms/${encodeURIComponent(roomId)}/games`)
 };
