@@ -10,3 +10,6 @@
 /dataSources.local.xml
 .idea/
 server/TicTacToeServer1
+node_modules/
+dist/
+.env.local

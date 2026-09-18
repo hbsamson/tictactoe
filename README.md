@@ -1,24 +1,19 @@
 # Tic-Tac-Toe
 
-A responsive two-player Tic-Tac-Toe web application. The browser UI is built with HTML5, CSS, and JavaScript, while the supplied Java servlet server stores rooms and boards in memory.
+A responsive two-player Tic-Tac-Toe project. The former plain-JavaScript frontend has been replaced by an empty React/Vite migration scaffold; the supplied Java servlet server stores rooms and boards in memory.
+
+The React modules are intentionally empty so the application can be migrated feature by feature. See [REACT-README.md](REACT-README.md#set-up-and-run-with-vite) for the architecture, setup instructions, Vite commands, and recommended implementation order.
 
 ## Project structure
 
 ```text
 .
-|-- index.html                     Browser UI
-|-- css/                           Layout, components, and responsive styles
-|-- js/
-|   |-- app.js                     Application orchestration and match lifecycle
-|   |-- api.js                     Payara endpoint client
-|   |-- config.js                  Shared timing, key, and avatar configuration
-|   |-- game.js                    Board parsing, turns, and result rules
-|   |-- lobby.js                   Key, player profile, and avatar behavior
-|   |-- notifications.js           Modals and toast notifications
-|   |-- room-storage.js            Cross-tab room profiles, scores, and cheers
-|   `-- ui.js                      Views, board rendering, and status display
-|-- assets/                        Images, icons, and font
-`-- server/TicTacToeServer1.war   Prebuilt Java servlet game server
+|-- index.html                     Vite HTML entry
+|-- src/                           React source, features, styles, and assets
+|-- public/                        Static public files
+|-- package.json                   Dependencies and Vite scripts
+|-- vite.config.js                 Vite React configuration
+`-- server/TicTacToeServer1.zip   Java servlet game server archive
 ```
 
 The WAR contains the five endpoints required by the project brief:
@@ -37,8 +32,8 @@ GET /tictactoe/tictactoeserver/board?key=ROOM_KEY
 - Payara Server 5.2022.5
 - Eclipse IDE for Enterprise Java and Web Developers.
 - Payara Tools installed from Eclipse Marketplace.
-- Live Server configured to serve the repository frontend on port `5500`.
-- Ports `5500` (frontend), `8080` (Payara HTTP), and `4848` (Payara administration) available.
+- Node.js 20.19+ or 22.12+ with npm.
+- Ports `5173` (Vite), `8080` (Payara HTTP), and `4848` (Payara administration) available.
 
 Official references:
 
@@ -79,7 +74,7 @@ The supplied servlet classes use Java class-file version 50 (Java 6), so they ar
 ### 3. Import and publish the backend WAR
 
 1. Select **File > Import > Web > WAR file**.
-2. Choose `server/TicTacToeServer1.war` from this repository.
+2. Choose `server/TicTacToeServer1.zip` from this repository.
 3. Name the Eclipse project `tictactoe-server` and select the Payara 5 target runtime.
 4. Open **Project > Properties > Web Project Settings** and set the context root to exactly `tictactoe`.
 
@@ -97,21 +92,20 @@ http://localhost:8080/tictactoe/tictactoeserver/check?key=TEST01
 
 The response should initially be `false`.
 
-### 4. Run the frontend with Live Server on port 5500
+### 4. Run the frontend with Vite
 
-The supplied WAR hosts only the servlet backend. Run the current root-level `index.html`, `css`, `js`, and `assets` separately with Live Server:
+The supplied server archive hosts only the servlet backend. Run the React frontend separately with Vite:
 
 1. Start Payara and confirm that the backend is available on port `8080`.
-2. Open this repository as the Live Server workspace/root.
-3. Set the Live Server port to `5500` if it is not already the default.
-4. Start Live Server from `index.html`.
-5. Open:
+2. From the repository root, run `npm install`.
+3. Run `npm run dev`.
+4. Open:
 
    ```text
-   http://localhost:5500/
+   http://localhost:5173/
    ```
 
-The frontend calls `http://localhost:8080/tictactoe/tictactoeserver` by default. The WAR supplies the required cross-origin response header, so the UI on port `5500` can call the Payara backend on port `8080`. The connection badge should change to **Server ready**.
+The migration scaffold currently renders a blank page by design. Follow the implementation order in `REACT-README.md` to add the React UI and backend integration.
 
 ### 5. Test with two application instances
 

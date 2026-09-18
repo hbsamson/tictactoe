@@ -1,4 +1,4 @@
-# Tic-Tac-Toe React Refactor
+# Tictactoe React Refactor
 
 ## Overview
 
@@ -54,7 +54,7 @@ The refactor should produce a project where another developer can locate, unders
 | Styling                | Tailwind CSS - Proposed | Tailwind can reduce repeated CSS and make component styling easier to locate. This is currently a planning decision and depends on whether it is permitted for the activity. |
 | Styling Fallback       | Existing CSS structure  | If Tailwind is not permitted, the existing CSS can be migrated and reorganized without changing the React architecture.                                                      |
 | Backend                | Spring Boot REST API    | Backend responsibilities stay outside the React frontend. React should communicate with Spring Boot through the frontend service layer.                                      |
-| External State Library | None initially          | Zustand or another state library would add unnecessary complexity for the current scope. It can be reconsidered if application state becomes significantly more complex.     |
+
 
 ---
 
@@ -86,7 +86,7 @@ Component boundaries should instead follow application responsibilities.
 The existing frontend is approximately organized as follows:
 
 ```text
-.
+tictactoe
 ├── assets/
 │   └── icons/
 ├── css/
@@ -143,9 +143,6 @@ Related files are grouped by application domain first and then by technical resp
 
 ```text
 tictactoe-react/
-│
-├── public/
-│
 ├── src/
 │   │
 │   ├── app/
@@ -231,6 +228,44 @@ This is a planned structure. Additional files should only be introduced when an 
 
 For example, the presence of an existing `controls.css` file does **not** automatically mean that a `Controls.jsx` component must be created. A component should be extracted only when its behavior, reuse, complexity, or independent responsibility justifies it.
 
+## Set Up and Run with Vite
+
+### Prerequisites
+
+Install Node.js 20.19 or newer (or Node.js 22.12 or newer) and npm. The backend is separate and must still be started when API-backed features are implemented.
+
+### First-time setup
+
+From the repository root, install the frontend dependencies:
+
+```powershell
+npm install
+```
+
+Start Vite's development server:
+
+```powershell
+npm run dev
+```
+
+Open the local URL printed by Vite (normally `http://localhost:5173`). Vite watches files under `src/` and refreshes the browser as the React implementation is added.
+
+### Other Vite commands
+
+Create a production build in `dist/`:
+
+```powershell
+npm run build
+```
+
+Preview that production build locally:
+
+```powershell
+npm run preview
+```
+
+The initial refactor intentionally contains empty React modules. It establishes the agreed file structure without copying DOM-manipulation code into React. Implement the files incrementally, starting with `src/main.jsx`, `src/app/App.jsx`, and `src/app/router.jsx`; then migrate one feature at a time into its component, hook, service, or utility module.
+
 ---
 
 # Why Feature-Based Organization?
@@ -306,7 +341,7 @@ Its responsibilities may include:
 * rendering the application router;
 * providing the common application shell.
 
-It should not contain detailed Tic-Tac-Toe game logic.
+It should not contain detailed Tictactoe game logic.
 
 ---
 
@@ -317,7 +352,7 @@ Routing is moved into React Router instead of maintaining separate HTML pages.
 The initial known page routes are:
 
 ```text
-/
+ /
  /history
 ```
 
@@ -1376,26 +1411,6 @@ Centralize HTTP concerns in the service layer.
 
 ---
 
-# Training-Specific Repository Conventions
-
-The React training specifies that test files should not be pushed to the training repository.
-
-This is treated as a **training-specific repository rule**, rather than a general React architectural principle.
-
-In a normal production application, automated tests are commonly committed alongside application code.
-
-Generated and local development files should also remain outside version control where applicable, including:
-
-```text
-node_modules/
-dist/
-.idea/
-```
-
-Project-specific editor configuration should only be committed when intentionally shared by the team.
-
----
-
 # Why Controllers Are Reduced in React
 
 The plain JavaScript application currently contains:
@@ -1593,11 +1608,6 @@ Existing backend integration
         ↓
 Spring Boot REST integration
 ```
-
-The migration does **not** include the training example involving an admin panel and person viewer.
-
-Those screens were examples used during the React learning session and are not part of the Tic-Tac-Toe application's functional scope.
-
 ---
 
 # Summary of Decisions
@@ -1635,4 +1645,4 @@ Utilities  → contain pure reusable logic
 Router     → controls page-level navigation
 ```
 
-This provides a structure that remains small enough for the current Tic-Tac-Toe activity while making the project's component boundaries and responsibilities easier to identify, maintain, and extend.
+This provides a structure that remains small enough for the current Tictactoe activity while making the project's component boundaries and responsibilities easier to identify, maintain, and extend.
